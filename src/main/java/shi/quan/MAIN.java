@@ -12,7 +12,7 @@ public class MAIN implements QuarkusApplication {
 
     @Override
     public int run(String... args) throws Exception {
-        logger.info("MAIN args : {}", args);
+        logger.info("MAIN args : {}", (Object[])args);
         return 0;
     }
 }

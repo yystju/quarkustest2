@@ -4,8 +4,8 @@ import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 
 @ApplicationScoped
-public class RCPSPService<Task> {
-    public List<Task> ssgs() {
+public class RCPSPService {
+    public List ssgs() {
         return null;
     }
 }
