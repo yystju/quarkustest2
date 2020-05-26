@@ -4,6 +4,11 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +89,31 @@ public class PSPLIBParserTest {
             }
         });
 
-        PSPLIBParser.ModelContext context = parser.model();
+        PSPLIBParser.ModelContext model = parser.model();
+
+        ParseTreeWalker walker = new ParseTreeWalker();
+
+        walker.walk(new ParseTreeListener() {
+            @Override
+            public void visitTerminal(TerminalNode terminalNode) {
+                logger.info("[visitTerminal] terminalNode : {}", terminalNode.getText());
+            }
+
+            @Override
+            public void visitErrorNode(ErrorNode errorNode) {
+                logger.info("[visitErrorNode] errorNode : {}", errorNode.getText());
+            }
+
+            @Override
+            public void enterEveryRule(ParserRuleContext parserRuleContext) {
+                logger.info("[enterEveryRule] text : {}", parserRuleContext.getText());
+            }
+
+            @Override
+            public void exitEveryRule(ParserRuleContext parserRuleContext) {
+
+            }
+        }, model);
 
         ins.close();
     }
