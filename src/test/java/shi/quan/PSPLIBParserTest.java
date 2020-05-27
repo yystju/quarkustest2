@@ -26,6 +26,7 @@ public class PSPLIBParserTest {
     @Test
     public void test() throws IOException {
         InputStream ins = PSPLIBParserTest.class.getResourceAsStream("/j120.sm/j1201_1.sm");
+//        InputStream ins = PSPLIBParserTest.class.getResourceAsStream("/example.sm");
 
         CharStream stream = CharStreams.fromStream(ins);
 
@@ -35,9 +36,15 @@ public class PSPLIBParserTest {
 
         parser.addParseListener(new PSPLIBBaseListener() {
             @Override
-            public void enterModel(PSPLIBParser.ModelContext ctx) {
-                logger.info("[enterModel] {}", ctx.getText());
-                super.enterModel(ctx);
+            public void exitKey(PSPLIBParser.KeyContext ctx) {
+                logger.info("[exitKey] {}", ctx.getText());
+                super.exitKey(ctx);
+            }
+
+            @Override
+            public void exitValue(PSPLIBParser.ValueContext ctx) {
+                logger.info("[exitValue] {}", ctx.getText());
+                super.exitValue(ctx);
             }
 
             @Override
@@ -58,62 +65,34 @@ public class PSPLIBParserTest {
                 super.enterPrecedenceRelations(ctx);
             }
 
+
+
             @Override
-            public void enterRequestsDurations(PSPLIBParser.RequestsDurationsContext ctx) {
-                logger.info("[enterRequestsDurations] {}", ctx.getText());
-                super.enterRequestsDurations(ctx);
+            public void exitHeader(PSPLIBParser.HeaderContext ctx) {
+                logger.info("[exitHeader] {}", ctx.getText());
+                super.exitHeader(ctx);
             }
 
             @Override
-            public void enterResourceAvailabilities(PSPLIBParser.ResourceAvailabilitiesContext ctx) {
-                logger.info("[enterResourceAvailabilities] {}", ctx.getText());
-                super.enterResourceAvailabilities(ctx);
+            public void exitRow(PSPLIBParser.RowContext ctx) {
+                logger.info("[exitRow] {}", ctx.getText());
+                super.exitRow(ctx);
             }
 
             @Override
-            public void exitHeaders(PSPLIBParser.HeadersContext ctx) {
-                logger.info("[exitHeaders] {}", ctx.getText());
-                super.enterHeaders(ctx);
+            public void exitOthers(PSPLIBParser.OthersContext ctx) {
+                logger.info("[exitOthers] {}", ctx.getText());
+                super.exitOthers(ctx);
             }
 
             @Override
-            public void exitData(PSPLIBParser.DataContext ctx) {
-                logger.info("[exitData] {}", ctx.getText());
-                super.enterData(ctx);
-            }
-
-            @Override
-            public void exitProp(PSPLIBParser.PropContext ctx) {
-                logger.info("[exitProp] {}", ctx.getText());
-                super.enterProp(ctx);
+            public void visitErrorNode(ErrorNode node) {
+                logger.info("[visitErrorNode] {}", node.getText());
+                super.visitErrorNode(node);
             }
         });
 
         PSPLIBParser.ModelContext model = parser.model();
-
-        ParseTreeWalker walker = new ParseTreeWalker();
-
-        walker.walk(new ParseTreeListener() {
-            @Override
-            public void visitTerminal(TerminalNode terminalNode) {
-                logger.info("[visitTerminal] terminalNode : {}", terminalNode.getText());
-            }
-
-            @Override
-            public void visitErrorNode(ErrorNode errorNode) {
-                logger.info("[visitErrorNode] errorNode : {}", errorNode.getText());
-            }
-
-            @Override
-            public void enterEveryRule(ParserRuleContext parserRuleContext) {
-                logger.info("[enterEveryRule] text : {}", parserRuleContext.getText());
-            }
-
-            @Override
-            public void exitEveryRule(ParserRuleContext parserRuleContext) {
-
-            }
-        }, model);
 
         ins.close();
     }
