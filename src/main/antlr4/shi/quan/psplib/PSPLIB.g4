@@ -26,7 +26,7 @@ resourceAvailableilities: 'RESOURCEAVAILABILITIES:' ;
 
 header : WS* TEXT (WS (TEXT | NUMBER))* ;
 
-row : WS* NUMBER (WS NUMBER)* ;
+row : WS* NUMBER (WS NUMBER)* WS*;
 
 TEXT   : [a-zA-Z#()][a-zA-Z0-9.(/)_#\-]* ;
 LETTER : [a-zA-Z]+ ;
