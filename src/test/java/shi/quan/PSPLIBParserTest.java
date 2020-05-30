@@ -4,11 +4,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +15,8 @@ import shi.quan.vo.PSPData;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 @QuarkusTest
 public class PSPLIBParserTest {
@@ -99,8 +97,14 @@ public class PSPLIBParserTest {
                 if("RESOURCE".equals(current)) {
 
                 } else if("PROJECTINFORMATION".equals(current)) {
+                    String[] columns = parseHeader(ctx);
+                    logger.info("[PROJECTINFORMATION] columns : {}, header : {}", columns, header);
+
                     data.setProjectInformationHeader(header);
                 } else if("PRECEDENCERELATIONS".equals(current)) {
+                    String[] columns = parseHeader(ctx);
+                    logger.info("[PRECEDENCERELATIONS] columns : {}, header : {}", columns, header);
+
                     data.setPrecedenceRelationsHeader(header);
                 } else {
 
@@ -118,8 +122,12 @@ public class PSPLIBParserTest {
                 if("RESOURCE".equals(current)) {
 
                 } else if("PROJECTINFORMATION".equals(current)) {
+                    String[] columns = parseRow(ctx);
+                    logger.info("[PROJECTINFORMATION] columns : {}, row : {}", columns, row);
                     data.getProjectInformationRows().add(row);
                 } else if("PRECEDENCERELATIONS".equals(current)) {
+                    String[] columns = parseRow(ctx);
+                    logger.info("[PRECEDENCERELATIONS] columns : {}, row : {}", columns, row);
                     data.getPprecedenceRelationsRows().add(row);
                 } else {
 
@@ -149,5 +157,37 @@ public class PSPLIBParserTest {
         logger.info("resource : {}", data.getResources());
         logger.info("PrecedenceRelations : {}", data.getPrecedenceRelationsHeader());
         logger.info("PrecedenceRelations : {}", data.getPprecedenceRelationsRows());
+    }
+
+    private String[] parseRow(PSPLIBParser.RowContext ctx) {
+        List<String> columnList = new ArrayList<>();
+
+        for(int i = 0; i < ctx.getChildCount(); ++i) {
+            String column = ctx.getChild(i).getText();
+
+            column = column.trim();
+
+            if(!"".equals(column)) {
+                columnList.add(column);
+            }
+        }
+
+        return columnList.toArray(new String[columnList.size()]);
+    }
+
+    private String[] parseHeader(PSPLIBParser.HeaderContext ctx) {
+        List<String> columnList = new ArrayList<>();
+
+        for(int i = 0; i < ctx.getChildCount(); ++i) {
+            String column = ctx.getChild(i).getText();
+
+            column = column.trim();
+
+            if(!"".equals(column)) {
+                columnList.add(column);
+            }
+        }
+
+        return columnList.toArray(new String[columnList.size()]);
     }
 }
