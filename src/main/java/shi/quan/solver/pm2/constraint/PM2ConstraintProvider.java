@@ -94,7 +94,7 @@ public class PM2ConstraintProvider implements ConstraintProvider {
                 .join(Task.class)
                 .join(Workplace.class)
                 .filter(((timeslot, task, workplace) -> DateTimeUtil.isTimeOverlap(timeslot, task) && task.getWorkplace().getId() == workplace.getId()))
-                .groupBy((timeslot, task, workplace) -> Duo.pair(timeslot, workplace), ConstraintCollectors.toList((timeslot, task, workplace) -> task))
+                .groupBy((timeslot, task, workplace) -> Duo.duo(timeslot, workplace), ConstraintCollectors.toList((timeslot, task, workplace) -> task))
                 .filter(((keyPair, tasks) -> {
                     long slotDuration = keyPair.getK().getDuration();
 

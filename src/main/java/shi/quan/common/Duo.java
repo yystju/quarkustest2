@@ -6,7 +6,7 @@ public class Duo<K extends Comparable<K>, V extends Comparable<V>> implements Co
     private K k;
     private V v;
 
-    public static <K extends Comparable<K>, V extends Comparable<V>> Duo<K, V> pair(K k, V v) {
+    public static <K extends Comparable<K>, V extends Comparable<V>> Duo<K, V> duo(K k, V v) {
         return new Duo<K, V>(k, v);
     }
 

@@ -73,7 +73,7 @@ public class SSGSServiceTest {
 
         context.put(SSGSService.DURATION_MAP, durationMap);
 
-        ssgsService.ssgs(context, graph, resource);
+        ssgsService.ssgs(context, graph, resource, 100);
     }
 
 }

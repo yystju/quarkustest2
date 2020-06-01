@@ -42,6 +42,16 @@ public class Task<TimeType, PayloadType, AmountType> {
         this.resourceMap = resourceMap;
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s(%s)", this.name, this.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
+    }
+
     public String getId() {
         return id;
     }
@@ -104,10 +114,5 @@ public class Task<TimeType, PayloadType, AmountType> {
 
     public void setResourceMap(Map<String, AmountType> resourceMap) {
         this.resourceMap = resourceMap;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s(%s)", this.name, this.id);
     }
 }
