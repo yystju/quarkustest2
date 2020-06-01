@@ -4,7 +4,6 @@ import org.jgrapht.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import shi.quan.common.Quartet;
-import shi.quan.common.Solo;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,6 +16,7 @@ public class GraphUtil {
     }
 
     /**
+     * See https://youtu.be/-TDh-5n90vk for details...
      * Quartet<Long, Long, Long, Long> -> ES, EF, LS, LF
      */
     public static <V, E> Map<V, Quartet<Long, Long, Long, Long>> cpm(Graph<V, E> graph, V start, V end, TimeExtractor extractor) {
