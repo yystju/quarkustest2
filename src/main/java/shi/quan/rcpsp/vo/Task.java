@@ -1,6 +1,9 @@
 package shi.quan.rcpsp.vo;
 
-public class Task<TimeType, PayloadType> {
+import java.util.HashMap;
+import java.util.Map;
+
+public class Task<TimeType, PayloadType, AmountType> {
     private String id;
     private String name;
     private TimeType minimumEstimationTime;
@@ -8,6 +11,8 @@ public class Task<TimeType, PayloadType> {
     private TimeType mostLikedEstimationTime;
 
     private PayloadType payload;
+
+    private Map<String, AmountType> resourceMap;
 
     private TimeEstimationStrategy<TimeType> strategy;
 
@@ -21,6 +26,11 @@ public class Task<TimeType, PayloadType> {
     }
 
     public Task(String id, String name, TimeType minimumEstimationTime, TimeType maximumEstimationTime, TimeType mostLikedEstimationTime, PayloadType payload, TimeEstimationStrategy<TimeType> strategy) {
+        this(id, name, minimumEstimationTime, maximumEstimationTime, mostLikedEstimationTime, payload, strategy, new HashMap<>());
+    }
+
+
+    public Task(String id, String name, TimeType minimumEstimationTime, TimeType maximumEstimationTime, TimeType mostLikedEstimationTime, PayloadType payload, TimeEstimationStrategy<TimeType> strategy, Map<String, AmountType> resourceMap) {
         this.id = id;
         this.name = name;
         this.minimumEstimationTime = minimumEstimationTime;
@@ -28,6 +38,8 @@ public class Task<TimeType, PayloadType> {
         this.mostLikedEstimationTime = mostLikedEstimationTime;
         this.payload = payload;
         this.strategy = strategy;
+
+        this.resourceMap = resourceMap;
     }
 
     public String getId() {
@@ -84,6 +96,14 @@ public class Task<TimeType, PayloadType> {
 
     public void setStrategy(TimeEstimationStrategy<TimeType> strategy) {
         this.strategy = strategy;
+    }
+
+    public Map<String, AmountType> getResourceMap() {
+        return resourceMap;
+    }
+
+    public void setResourceMap(Map<String, AmountType> resourceMap) {
+        this.resourceMap = resourceMap;
     }
 
     @Override

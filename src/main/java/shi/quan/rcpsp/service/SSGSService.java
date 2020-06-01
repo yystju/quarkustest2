@@ -22,14 +22,14 @@ public class SSGSService {
     public static final String TIME_MAP = "TIME_MAP";
     public static final String CMP_SET = "CMP_SET";
 
-    public <TimeType extends Comparable<TimeType>, PayloadType, EdgeType> void ssgs(Map<String, Object> context, Graph<Task<TimeType, PayloadType>, EdgeType> graph, Object resources) throws BuzzException {
+    public <TimeType extends Comparable<TimeType>, PayloadType, AmountType, EdgeType> void ssgs(Map<String, Object> context, Graph<Task<TimeType, PayloadType, AmountType>, EdgeType> graph, Object resources) throws BuzzException {
         timeCalculation(context, graph);
         resourceAdjustment(context, resources);
 
-        Set<Task<TimeType, PayloadType>> lastAvailableTasks = null;
+        Set<Task<TimeType, PayloadType, AmountType>> lastAvailableTasks = null;
 
         for(;;) {
-            Set<Task<TimeType, PayloadType>> availableTasks = getCurrentAvailableTasks();
+            Set<Task<TimeType, PayloadType, AmountType>> availableTasks = getCurrentAvailableTasks();
 
             if((lastAvailableTasks != null && lastAvailableTasks.equals(availableTasks)) || (lastAvailableTasks == null && availableTasks == null)) {
                 logger.error("availableTasks : {}", availableTasks);
@@ -62,27 +62,27 @@ public class SSGSService {
     }
 
     @SuppressWarnings("unchecked")
-    private <TimeType extends Comparable<TimeType>, PayloadType, EdgeType> void timeCalculation(Map<String, Object> context, Graph<Task<TimeType, PayloadType>, EdgeType> graph) throws BuzzException {
-        List<Task<TimeType, PayloadType>> startList = graph.vertexSet().stream().filter(v-> graph.incomingEdgesOf(v).isEmpty()).collect(Collectors.toList());
+    private <TimeType extends Comparable<TimeType>, PayloadType, AmountType, EdgeType> void timeCalculation(Map<String, Object> context, Graph<Task<TimeType, PayloadType, AmountType>, EdgeType> graph) throws BuzzException {
+        List<Task<TimeType, PayloadType, AmountType>> startList = graph.vertexSet().stream().filter(v-> graph.incomingEdgesOf(v).isEmpty()).collect(Collectors.toList());
 
         if(startList.size() != 1) {
             throw new BuzzException("Only one start vertex is allowed.");
         }
 
-        List<Task<TimeType, PayloadType>> endList = graph.vertexSet().stream().filter(v-> graph.outgoingEdgesOf(v).isEmpty()).collect(Collectors.toList());
+        List<Task<TimeType, PayloadType, AmountType>> endList = graph.vertexSet().stream().filter(v-> graph.outgoingEdgesOf(v).isEmpty()).collect(Collectors.toList());
 
         if(endList.size() != 1) {
             throw new BuzzException("Only one end vertex is allowed.");
         }
 
 
-        Map<Task<TimeType, PayloadType>, Long> durationMap = (Map<Task<TimeType, PayloadType>, Long>) context.get(DURATION_MAP);
+        Map<Task<TimeType, PayloadType, AmountType>, Long> durationMap = (Map<Task<TimeType, PayloadType, AmountType>, Long>) context.get(DURATION_MAP);
 
         if(durationMap == null) {
             throw new BuzzException("DURATION_MAP is mandatory.");
         }
 
-        Map<Task<TimeType, PayloadType>, Quartet<Long, Long, Long, Long>> map = GraphUtil.cpm(graph, startList.get(0), endList.get(0), (v) -> {
+        Map<Task<TimeType, PayloadType, AmountType>, Quartet<Long, Long, Long, Long>> map = GraphUtil.cpm(graph, startList.get(0), endList.get(0), (v) -> {
             return durationMap.get(v);
         });
 
@@ -91,7 +91,7 @@ public class SSGSService {
 
         logger.info("TIME_MAP : {}", map);
 
-        Set<Task<TimeType, PayloadType>> cmp = GraphUtil.cpm(map);
+        Set<Task<TimeType, PayloadType, AmountType>> cmp = GraphUtil.cpm(map);
 
         context.put(CMP_SET, cmp);
 
@@ -102,31 +102,31 @@ public class SSGSService {
         throw new UnsupportedOperationException();
     }
 
-    private <TimeType, PayloadType> Set<Task<TimeType, PayloadType>> getCurrentAvailableTasks() {
+    private <TimeType, PayloadType, AmountType> Set<Task<TimeType, PayloadType, AmountType>> getCurrentAvailableTasks() {
         throw new UnsupportedOperationException();
     }
 
-    private <TimeType, PayloadType> Task<TimeType, PayloadType> resourceConstraintCheck(Task<TimeType, PayloadType> task) {
+    private <TimeType, PayloadType, AmountType> Task<TimeType, PayloadType, AmountType> resourceConstraintCheck(Task<TimeType, PayloadType, AmountType> task) {
         throw new UnsupportedOperationException();
     }
 
-    private <TimeType extends Comparable<TimeType>, PayloadType> Duo<TimeType, TimeType> startEndTimeCalculate(Task<TimeType, PayloadType> task) {
+    private <TimeType extends Comparable<TimeType>, AmountType, PayloadType> Duo<TimeType, TimeType> startEndTimeCalculate(Task<TimeType, PayloadType, AmountType> task) {
         throw new UnsupportedOperationException();
     }
 
-    private <TimeType extends Comparable<TimeType>, PayloadType> Object resourceOccupationCalculation(Task<TimeType, PayloadType> task) {
+    private <TimeType extends Comparable<TimeType>, AmountType, PayloadType> Object resourceOccupationCalculation(Task<TimeType, PayloadType, AmountType> task) {
         throw new UnsupportedOperationException();
     }
 
-    private <TimeType extends Comparable<TimeType>, PayloadType> Task<TimeType, PayloadType> choosingResource(Task<TimeType, PayloadType> task, Object resource) {
+    private <TimeType extends Comparable<TimeType>, AmountType, PayloadType> Task<TimeType, PayloadType, AmountType> choosingResource(Task<TimeType, PayloadType, AmountType> task, Object resource) {
         throw new UnsupportedOperationException();
     }
 
-    private <TimeType extends Comparable<TimeType>, PayloadType> void updateResource(Task<TimeType, PayloadType> task, Object resource) {
+    private <TimeType extends Comparable<TimeType>, AmountType, PayloadType> void updateResource(Task<TimeType, PayloadType, AmountType> task, Object resource) {
         throw new UnsupportedOperationException();
     }
 
-    private <PayloadType, TimeType extends Comparable<TimeType>> void updateTask(Task<TimeType,PayloadType> task) {
+    private <TimeType extends Comparable<TimeType>, AmountType, PayloadType> void updateTask(Task<TimeType, PayloadType, AmountType> task) {
         throw new UnsupportedOperationException();
     }
 }
