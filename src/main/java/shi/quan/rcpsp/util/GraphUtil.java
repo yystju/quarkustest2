@@ -47,7 +47,7 @@ public class GraphUtil {
                         return timeMap.get(t).getFour() /* LF */ - extractor.duration(t);
                     }).collect(Collectors.toList());
 
-            long minLF = lfList.stream().mapToLong(l->l).max().orElse(projectDuration);
+            long minLF = lfList.stream().mapToLong(l->l).min().orElse(projectDuration);
 
             long duration = extractor.duration(v);
 
