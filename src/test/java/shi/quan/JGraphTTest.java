@@ -14,10 +14,13 @@ import org.jgrapht.traverse.BreadthFirstIterator;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import shi.quan.common.Quartet;
+import shi.quan.rcpsp.util.GraphUtil;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 public class JGraphTTest {
@@ -125,4 +128,102 @@ public class JGraphTTest {
         System.out.println(cPaths.getPath("i"));
     }
 
+    @Test
+    public void test2() {
+        Graph<String, DefaultEdge> directedGraph =
+                new DefaultDirectedGraph<String, DefaultEdge>(DefaultEdge.class);
+        directedGraph.addVertex("a");
+        directedGraph.addVertex("b");
+        directedGraph.addVertex("c");
+        directedGraph.addVertex("d");
+        directedGraph.addVertex("e");
+        directedGraph.addVertex("f");
+        directedGraph.addVertex("g");
+        directedGraph.addVertex("h");
+        directedGraph.addVertex("i");
+
+        directedGraph.addEdge("a", "b");
+        directedGraph.addEdge("a", "c");
+        directedGraph.addEdge("b", "d");
+        directedGraph.addEdge("b", "e");
+        directedGraph.addEdge("c", "e");
+        directedGraph.addEdge("c", "f");
+        directedGraph.addEdge("d", "g");
+        directedGraph.addEdge("d", "h");
+        directedGraph.addEdge("e", "h");
+        directedGraph.addEdge("f", "g");
+        directedGraph.addEdge("g", "i");
+        directedGraph.addEdge("h", "i");
+
+        Iterator<String> iterator = new BreadthFirstIterator<>(directedGraph, "a");
+
+        List<String> expected = new ArrayList<>();
+
+        while (iterator.hasNext()) {
+            String v = iterator.next();
+            expected.add(v);
+        }
+
+        List<String> actual = new ArrayList<>();
+        GraphUtil.forwardBreadthVisit(directedGraph, "a", (v) -> {
+            actual.add(v);
+        });
+
+        assertEquals(expected, actual, "FORWARD TRAVERSAL...");
+
+        List<String> reversed = new ArrayList<>();
+
+        GraphUtil.backwardBreadthVisit(directedGraph, "i", (v) -> {
+            reversed.add(v);
+        });
+
+        logger.info("expected : {}", expected);
+        logger.info("actual : {}", actual);
+        logger.info("reversed : {}", reversed);
+    }
+
+    @Test
+    public void test3() {
+        Graph<String, DefaultEdge> directedGraph =
+                new DefaultDirectedGraph<String, DefaultEdge>(DefaultEdge.class);
+        directedGraph.addVertex("a");
+        directedGraph.addVertex("b");
+        directedGraph.addVertex("c");
+        directedGraph.addVertex("d");
+        directedGraph.addVertex("e");
+        directedGraph.addVertex("f");
+        directedGraph.addVertex("g");
+        directedGraph.addVertex("h");
+        directedGraph.addVertex("i");
+
+        directedGraph.addEdge("a", "b");
+        directedGraph.addEdge("a", "c");
+        directedGraph.addEdge("b", "d");
+        directedGraph.addEdge("b", "e");
+        directedGraph.addEdge("c", "e");
+        directedGraph.addEdge("c", "f");
+        directedGraph.addEdge("d", "g");
+        directedGraph.addEdge("d", "h");
+        directedGraph.addEdge("e", "h");
+        directedGraph.addEdge("f", "g");
+        directedGraph.addEdge("g", "i");
+        directedGraph.addEdge("h", "i");
+
+        Map<String, Long> durationMap = new HashMap<>();
+
+        for(String v : directedGraph.vertexSet()) {
+            durationMap.put(v, Math.random() > 0.5 ? 1L : 2L);
+        }
+
+        Map<String, Quartet<Long, Long, Long, Long>> map = GraphUtil.cpm(directedGraph, "a", "i", (v) -> durationMap.get(v));
+
+        for(String v : directedGraph.vertexSet()) {
+            logger.info("{} ({})= {}", v, durationMap.get(v), map.get(v));
+
+        }
+
+        Set<String> cpm = GraphUtil.cpm(map);
+
+        logger.info("cpm : {}", cpm);
+    }
 }

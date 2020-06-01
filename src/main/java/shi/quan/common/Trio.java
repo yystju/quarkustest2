@@ -19,6 +19,20 @@ public class Trio<One extends Comparable<One>, Two extends Comparable<Two>, Thre
         this.three = three;
     }
 
+    @Override
+    public int compareTo(Trio<One, Two, Three> o) {
+        return Comparator
+                .comparing(Trio<One, Two, Three>::getOne)
+                .thenComparing(Trio<One, Two, Three>::getTwo)
+                .thenComparing(Trio<One, Two, Three>::getThree)
+                .compare(this, o);
+    }
+
+    @Override
+    public String toString() {
+        return "(" + one + ", " + two + ", " + three + ')';
+    }
+
     public One getOne() {
         return one;
     }
@@ -41,14 +55,5 @@ public class Trio<One extends Comparable<One>, Two extends Comparable<Two>, Thre
 
     public void setThree(Three three) {
         this.three = three;
-    }
-
-    @Override
-    public int compareTo(Trio<One, Two, Three> o) {
-        return Comparator
-                .comparing(Trio<One, Two, Three>::getOne)
-                .thenComparing(Trio<One, Two, Three>::getTwo)
-                .thenComparing(Trio<One, Two, Three>::getThree)
-                .compare(this, o);
     }
 }
