@@ -34,14 +34,14 @@ public class SSGSService {
 
         Set<Task<TimeType, PayloadType, AmountType>> visited = new HashSet<>();
 
-        if(uBound < 0L) {
+        if (uBound < 0L) {
             uBound = 5000L;
         }
 
         long loopCount = 0;
 
         for(;;) {
-            if(loopCount > uBound) {
+            if (loopCount > uBound) {
                 throw new BuzzException(String.format("Exceed the uBound (%d/%d)...", loopCount, uBound));
             }
 
@@ -49,13 +49,13 @@ public class SSGSService {
 
             List<Task<TimeType, PayloadType, AmountType>> availableTasks = getCurrentAvailableTasks(context, graph, visited);
 
-            if(lastAvailableTasks != null && lastAvailableTasks.equals(availableTasks)) {
+            if (lastAvailableTasks != null && lastAvailableTasks.equals(availableTasks)) {
                 logger.error("availableTasks : {}", availableTasks);
                 logger.error("lastAvailableTasks : {}", lastAvailableTasks);
                 throw new BuzzException("Endless loop detected...");
             }
 
-            if(availableTasks.isEmpty()) {
+            if (availableTasks.isEmpty()) {
                 return;
             }
 
@@ -63,14 +63,23 @@ public class SSGSService {
 
             logger.info("[MAIN LOOP] loopCount : {}, availableTasks : {}", loopCount, availableTasks);
 
+            if (availableTasks.isEmpty()) {
+                List<Task<TimeType, PayloadType, AmountType>> unvisited = graph.vertexSet().stream()
+                        .filter(t -> !visited.contains(t))
+                        .collect(Collectors.toList());
 
+                if (!unvisited.isEmpty()) {
+                    logger.error("Not all tasks has been chosen. The unvisited task(s) : {}", unvisited);
+                    throw new BuzzException("Failed to select available tasks for all vertices.");
+                }
+            }
 
             for (;;) {
                 Task<TimeType,PayloadType,AmountType> task = chooseTask(context, availableTasks);
 
-                if(task == null && availableTasks.isEmpty()) {
+                if (task == null && availableTasks.isEmpty()) {
                     break;
-                } else if(task == null) {
+                } else if (task == null) {
                     logger.error("Failed to choose a task from availableTasks : {}", availableTasks);
                     throw new BuzzException("Failed to choose a task...");
                 }
@@ -103,7 +112,7 @@ public class SSGSService {
                 .filter(v-> graph.incomingEdgesOf(v).isEmpty())
                 .collect(Collectors.toList());
 
-        if(startList.size() != 1) {
+        if (startList.size() != 1) {
             throw new BuzzException("Only one start vertex is allowed.");
         }
 
@@ -117,7 +126,7 @@ public class SSGSService {
                 .filter(v-> graph.outgoingEdgesOf(v).isEmpty())
                 .collect(Collectors.toList());
 
-        if(endList.size() != 1) {
+        if (endList.size() != 1) {
             throw new BuzzException("Only one end vertex is allowed.");
         }
 
@@ -130,7 +139,7 @@ public class SSGSService {
 
         Map<Task<TimeType, PayloadType, AmountType>, Long> durationMap = (Map<Task<TimeType, PayloadType, AmountType>, Long>) context.get(DURATION_MAP);
 
-        if(durationMap == null) {
+        if (durationMap == null) {
             throw new BuzzException("DURATION_MAP is mandatory.");
         }
 
@@ -163,7 +172,7 @@ public class SSGSService {
         List<Task<TimeType,PayloadType,AmountType>> ret = new ArrayList<>();
 
         GraphUtil.forwardBreadthVisit(graph, startNode, (v) -> {
-            if(!visited.contains(v)) {
+            if (!visited.contains(v)) {
                 if (!graph.incomingEdgesOf(v).stream().anyMatch(e -> !visited.contains(graph.getEdgeSource(e)))) {
                     ret.add(v);
                 }
@@ -204,12 +213,14 @@ public class SSGSService {
         return Duo.duo(task, resource);
     }
 
-    private <TimeType extends Comparable<TimeType>, AmountType extends Comparable<AmountType>, PayloadType>
+    private
+    <TimeType extends Comparable<TimeType>, AmountType extends Comparable<AmountType>, PayloadType>
     void updateResource(Map<String, Object> context, Task<TimeType, PayloadType, AmountType> task, Object resourceHandler) {
         logger.info("[updateResource] task : {}", task);
     }
 
-    private <TimeType extends Comparable<TimeType>, AmountType extends Comparable<AmountType>, PayloadType>
+    private
+    <TimeType extends Comparable<TimeType>, AmountType extends Comparable<AmountType>, PayloadType>
     void updateTask(Map<String, Object> context, Task<TimeType, PayloadType, AmountType> task) {
         logger.info("[updateTask] task : {}", task);
     }
