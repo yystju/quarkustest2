@@ -1,9 +1,10 @@
 package shi.quan.rcpsp.vo;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Task<TimeType, PayloadType, AmountType> {
+public class Task<TimeType extends Comparable<TimeType>, PayloadType, AmountType extends Comparable<AmountType>> implements Comparable<Task<TimeType, PayloadType, AmountType>> {
     private String id;
     private String name;
     private TimeType minimumEstimationTime;
@@ -50,6 +51,14 @@ public class Task<TimeType, PayloadType, AmountType> {
     @Override
     public int hashCode() {
         return this.id.hashCode();
+    }
+
+    @Override
+    public int compareTo(Task<TimeType, PayloadType, AmountType> o) {
+        return Comparator
+                .comparing(Task<TimeType, PayloadType, AmountType>::getId)
+                .thenComparing(Task<TimeType, PayloadType, AmountType>::getName)
+                .compare(this, o);
     }
 
     public String getId() {

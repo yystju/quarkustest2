@@ -4,7 +4,7 @@ import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.optaplanner.core.api.score.stream.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import shi.quan.common.Duo;
+import shi.quan.common.vo.Duo;
 import shi.quan.solver.pm2.util.DateTimeUtil;
 import shi.quan.solver.pm2.vo.Task;
 import shi.quan.solver.pm2.vo.Timeslot;

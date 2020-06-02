@@ -14,7 +14,7 @@ import org.jgrapht.traverse.BreadthFirstIterator;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import shi.quan.common.Quartet;
+import shi.quan.common.vo.Quartet;
 import shi.quan.rcpsp.util.GraphUtil;
 
 import java.io.ByteArrayOutputStream;

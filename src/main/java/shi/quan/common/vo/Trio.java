@@ -1,13 +1,11 @@
-package shi.quan.common;
+package shi.quan.common.vo;
 
-import java.util.Comparator;
-
-public class Trio<One extends Comparable<One>, Two extends Comparable<Two>, Three  extends Comparable<Three>> implements Comparable<Trio<One, Two, Three>> {
+public class Trio<One, Two, Three> {
     private One one;
     private Two two;
     private Three three;
 
-    public static <One extends Comparable<One>, Two extends Comparable<Two>, Three  extends Comparable<Three>> Trio<One, Two, Three> trio(One one, Two two, Three three) {
+    public static <One, Two, Three> Trio<One, Two, Three> trio(One one, Two two, Three three) {
         return new Trio<One, Two, Three>(one, two, three);
     }
 
@@ -17,15 +15,6 @@ public class Trio<One extends Comparable<One>, Two extends Comparable<Two>, Thre
         this.one = one;
         this.two = two;
         this.three = three;
-    }
-
-    @Override
-    public int compareTo(Trio<One, Two, Three> o) {
-        return Comparator
-                .comparing(Trio<One, Two, Three>::getOne)
-                .thenComparing(Trio<One, Two, Three>::getTwo)
-                .thenComparing(Trio<One, Two, Three>::getThree)
-                .compare(this, o);
     }
 
     @Override

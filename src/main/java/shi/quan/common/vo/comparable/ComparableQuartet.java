@@ -1,4 +1,4 @@
-package shi.quan.common;
+package shi.quan.common.vo.comparable;
 
 import java.util.Comparator;
 
@@ -6,10 +6,10 @@ import java.util.Comparator;
 //        , Two extends Comparable<Two> \\
 //        , Three extends Comparable<Three> \\
 //        , Four extends Comparable<Four>>;", that will significantly shorten the declaration...
-public class Quartet<One extends Comparable<One>
+public class ComparableQuartet<One extends Comparable<One>
         , Two extends Comparable<Two>
         , Three extends Comparable<Three>
-        , Four extends Comparable<Four>> implements Comparable<Quartet<One, Two, Three, Four>> {
+        , Four extends Comparable<Four>> implements Comparable<ComparableQuartet<One, Two, Three, Four>> {
     private One one;
     private Two two;
     private Three three;
@@ -18,13 +18,13 @@ public class Quartet<One extends Comparable<One>
     public static <One extends Comparable<One>
             , Two extends Comparable<Two>
             , Three  extends Comparable<Three>
-            , Four  extends Comparable<Four>> Quartet<One, Two, Three, Four> quartet(One one, Two two, Three three, Four four) {
-        return new Quartet<One, Two, Three, Four>(one, two, three, four);
+            , Four  extends Comparable<Four>> ComparableQuartet<One, Two, Three, Four> quartet(One one, Two two, Three three, Four four) {
+        return new ComparableQuartet<One, Two, Three, Four>(one, two, three, four);
     }
 
-    public Quartet() {}
+    public ComparableQuartet() {}
 
-    public Quartet(One one, Two two, Three three, Four four) {
+    public ComparableQuartet(One one, Two two, Three three, Four four) {
         this.one = one;
         this.two = two;
         this.three = three;
@@ -32,12 +32,12 @@ public class Quartet<One extends Comparable<One>
     }
 
     @Override
-    public int compareTo(Quartet<One, Two, Three, Four> o) {
+    public int compareTo(ComparableQuartet<One, Two, Three, Four> o) {
         return Comparator
-                .comparing(Quartet<One, Two, Three, Four>::getOne)
-                .thenComparing(Quartet<One, Two, Three, Four>::getTwo)
-                .thenComparing(Quartet<One, Two, Three, Four>::getThree)
-                .thenComparing(Quartet<One, Two, Three, Four>::getFour)
+                .comparing(ComparableQuartet<One, Two, Three, Four>::getOne)
+                .thenComparing(ComparableQuartet<One, Two, Three, Four>::getTwo)
+                .thenComparing(ComparableQuartet<One, Two, Three, Four>::getThree)
+                .thenComparing(ComparableQuartet<One, Two, Three, Four>::getFour)
                 .compare(this, o);
     }
 

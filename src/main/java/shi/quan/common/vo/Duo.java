@@ -1,12 +1,10 @@
-package shi.quan.common;
+package shi.quan.common.vo;
 
-import java.util.Comparator;
-
-public class Duo<K extends Comparable<K>, V extends Comparable<V>> implements Comparable<Duo<K, V>> {
+public class Duo<K, V> {
     private K k;
     private V v;
 
-    public static <K extends Comparable<K>, V extends Comparable<V>> Duo<K, V> duo(K k, V v) {
+    public static <K, V> Duo<K, V> duo(K k, V v) {
         return new Duo<K, V>(k, v);
     }
 
@@ -15,14 +13,6 @@ public class Duo<K extends Comparable<K>, V extends Comparable<V>> implements Co
     public Duo(K k, V v) {
         this.k = k;
         this.v = v;
-    }
-
-    @Override
-    public int compareTo(Duo<K, V> o) {
-        return Comparator
-                .comparing(Duo<K, V>::getK)
-                .thenComparing(Duo<K, V>::getV)
-                .compare(this, o);
     }
 
     @Override

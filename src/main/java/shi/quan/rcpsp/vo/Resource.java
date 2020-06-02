@@ -1,6 +1,8 @@
 package shi.quan.rcpsp.vo;
 
-public class Resource<AmountType> {
+import java.util.Comparator;
+
+public class Resource<AmountType extends Comparable<AmountType>> implements Comparable<Resource<AmountType>> {
     private String id;
     private String name;
 
@@ -22,6 +24,14 @@ public class Resource<AmountType> {
                 ", name='" + name + '\'' +
                 ", amount=" + amount +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Resource<AmountType> o) {
+        return Comparator
+                .comparing(Resource<AmountType>::getId)
+                .thenComparing(Resource<AmountType>::getAmount)
+                .compare(this, o);
     }
 
     public String getId() {

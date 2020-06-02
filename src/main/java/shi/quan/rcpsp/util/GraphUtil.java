@@ -3,7 +3,7 @@ package shi.quan.rcpsp.util;
 import org.jgrapht.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import shi.quan.common.Quartet;
+import shi.quan.common.vo.Quartet;
 
 import java.util.*;
 import java.util.stream.Collectors;
