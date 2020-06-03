@@ -17,7 +17,7 @@ public class RangeUtil {
    }
 
    public interface ResourceAmountProvider<TimeType, AmountType> {
-      AmountType getResourceByTime(TimeType time);
+      AmountType getResourceByTimeRange(TimeType start, TimeType end);
    }
 
    public static
@@ -37,20 +37,21 @@ public class RangeUtil {
 
          AmountType amount = amountCalculator.zero();
 
-         for(Duo<TimeType, TimeType> range : ranges) {
+         for (Duo<TimeType, TimeType> range : ranges) {
             if (!isEmptyRange(intersect(r, range))) {
                AmountType resourceOfRange = resourceMap.get(range);
                amount = amountCalculator.plus(amount, resourceOfRange);
             }
          }
 
-         logger.info("amount : {}, resource : {}", amount, resourceAmountProvider.getResourceByTime(r.getK()));
+         AmountType resourceThreshold = resourceAmountProvider.getResourceByTimeRange(r.getK(), r.getV());
+         logger.info("amount : {}, resource : {}", amount, resourceThreshold);
 
-         ret = resourceAmountProvider.getResourceByTime(r.getK()).compareTo(amount) >= 0;
+         ret = resourceThreshold.compareTo(amount) >= 0;
 
          logger.info("ret : {}", ret);
 
-         if(!ret) {
+         if (!ret) {
             break;
          }
       }

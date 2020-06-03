@@ -72,7 +72,7 @@ public class RangeTest {
             public Integer minus(Integer a, Integer b) {
                 return a - b;
             }
-        }, time -> 8);
+        }, (start, end) -> 8);
 
         logger.info("result : {}", result);
 
