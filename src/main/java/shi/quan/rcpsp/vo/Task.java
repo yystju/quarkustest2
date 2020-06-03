@@ -7,6 +7,7 @@ import java.util.Map;
 public class Task<TimeType extends Comparable<TimeType>, PayloadType, AmountType extends Comparable<AmountType>> implements Comparable<Task<TimeType, PayloadType, AmountType>> {
     private String id;
     private String name;
+
     private TimeType minimumEstimationTime;
     private TimeType maximumEstimationTime;
     private TimeType mostLikedEstimationTime;

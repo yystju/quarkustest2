@@ -147,7 +147,6 @@ public class SSGSService {
             return durationMap.get(v);
         });
 
-
         context.put(TIME_MAP, map);
 
         logger.info("TIME_MAP : {}", map);
@@ -199,10 +198,21 @@ public class SSGSService {
         return true;
     }
 
+    @SuppressWarnings("unchecked")
     private
     <TimeType extends Comparable<TimeType>, AmountType extends Comparable<AmountType>, PayloadType>
     Object resourceOccupationCalculation(Map<String, Object> context, Task<TimeType, PayloadType, AmountType> task) {
         Resource<AmountType> r = null;
+
+        Map<Task<TimeType, PayloadType, AmountType>, Quartet<Long, Long, Long, Long>> map = (Map<Task<TimeType, PayloadType, AmountType>, Quartet<Long, Long, Long, Long>>) context.get(TIME_MAP);
+
+        Quartet<Long, Long, Long, Long> q = map.get(task);
+
+        for(String resourceId : task.getResourceMap().keySet()) {
+            AmountType amount = task.getResourceMap().get(resourceId);
+
+
+        }
 
         return new Object();
     }
