@@ -45,7 +45,7 @@ public class RangeUtil {
          }
 
          AmountType resourceThreshold = resourceAmountProvider.getResourceByTimeRange(r.getK(), r.getV());
-         logger.info("amount : {}, resource : {}", amount, resourceThreshold);
+         logger.info("r : {}, amount : {}, resource : {}", r, amount, resourceThreshold);
 
          ret = resourceThreshold.compareTo(amount) >= 0;
 
