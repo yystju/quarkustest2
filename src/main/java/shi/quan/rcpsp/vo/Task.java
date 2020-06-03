@@ -14,7 +14,7 @@ public class Task<TimeType extends Comparable<TimeType>, PayloadType, AmountType
 
     private PayloadType payload;
 
-    private Map<String, AmountType> resourceMap;
+    private Map<String, AmountType> resourceMap = new HashMap<>();
 
     private TimeEstimationStrategy<TimeType> strategy;
 

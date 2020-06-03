@@ -51,6 +51,7 @@ public class SSGSService {
         Set<Task<TimeType, PayloadType, AmountType>> lastAvailableTasks = null;
 
         Set<Task<TimeType, PayloadType, AmountType>> visited = new HashSet<>();
+        Set<Task<TimeType, PayloadType, AmountType>> proceededTasks = new HashSet<>();
 
         if (uBound < 0L) {
             uBound = 5000L;
@@ -93,9 +94,12 @@ public class SSGSService {
             }
 
             for (;;) {
+                logger.info("[INNER LOOP] visited : {}", visited);
+
                 Task<TimeType,PayloadType,AmountType> task = chooseTask(context, availableTasks);
 
                 if (task == null && availableTasks.isEmpty()) {
+                    logger.info("[FINISHED] proceededTasks : {}", proceededTasks.stream().map(t->Duo.duo(t.getPlannedStartTime(), t.getPlannedEndTime())).collect(Collectors.toList()));
                     break;
                 } else if (task == null) {
                     logger.error("Failed to choose a task from availableTasks : {}", availableTasks);
@@ -105,14 +109,19 @@ public class SSGSService {
                 logger.info(">> CHOOSE THE TASK : {}", task);
 
                 if (resourceConstraintCheck(context, resources, task)) {
-                    Map<String, AmountType> diff = resourceSaturationCalculation(context, graph, resources, task, visited);
-                    if (diff != null) {
+                    Duo<Map<String, AmountType>, Duo<TimeType, TimeType>> result = resourceSaturationCalculation(context, graph, resources, task, proceededTasks);
+
+                    if (result != null) {
+                        Map<String, AmountType> diff = result.getK();
+                        Duo<TimeType, TimeType> time = result.getV();
+
                         Resource<TimeType, AmountType> chosenResource = chooseResource(context, resources, task, diff);
 
                         if (chosenResource != null) {
                             updateResource(context, chosenResource, task, diff);
-                            updateTask(context, task);
+                            updateTask(context, task, time);
                             visited.add(task);
+                            proceededTasks.add(task);
                         }
                     }
                 }
@@ -221,7 +230,7 @@ public class SSGSService {
     @SuppressWarnings("unchecked")
     private
     <TimeType extends Comparable<TimeType>, AmountType extends Comparable<AmountType>, PayloadType, EdgeType>
-    Map<String, AmountType> resourceSaturationCalculation(Map<String, Object> context
+    Duo<Map<String, AmountType>, Duo<TimeType, TimeType>> resourceSaturationCalculation(Map<String, Object> context
             , Graph<Task<TimeType, PayloadType, AmountType>, EdgeType> graph
             , Map<String, Resource<TimeType, AmountType>> resources
             , Task<TimeType, PayloadType, AmountType> task
@@ -232,20 +241,30 @@ public class SSGSService {
 
         Map<Task<TimeType, PayloadType, AmountType>, Quartet<Long, Long, Long, Long>> map = (Map<Task<TimeType, PayloadType, AmountType>, Quartet<Long, Long, Long, Long>>) context.get(TIME_MAP);
 
+        logger.info("map : {}", map);
+
         RangeUtil.AmountCalculator<AmountType> amountCalculator = (RangeUtil.AmountCalculator<AmountType>)context.get(AMOUNT_CALCULATOR);
 
         Duo<TimeType, TimeType> selectedTime = calcTimeRange(context, graph, task, map.get(task));
 
+        logger.info("selectedTime : {}", selectedTime);
+
         boolean isAcceptable = true;
 
         for(String resourceId : task.getResourceMap().keySet()) {
+            logger.info("resourceId : {}", resourceId);
+
             Resource<TimeType, AmountType> resource = resources.get(resourceId);
+
+            logger.info("resource : {}", resource);
 
             List<Duo<TimeType, TimeType>> ranges = new ArrayList<>();
             Map<Duo<TimeType, TimeType>, AmountType> resourceMap = new HashMap<>();
 
             for(Task<TimeType, PayloadType, AmountType> v : visited) {
-                Duo<TimeType, TimeType> duo = Duo.duo(v.getPlannedStartTime(), v.getPlannedEndTime());
+                logger.info("v : {}", v);
+                Duo<TimeType, TimeType> duo = (v != task) ? Duo.duo(v.getPlannedStartTime(), v.getPlannedEndTime()) : selectedTime;
+                logger.info("duo : {}", duo);
                 ranges.add(duo);
                 resourceMap.put(duo, task.getResourceMap().get(resourceId));
             }
@@ -260,7 +279,7 @@ public class SSGSService {
         }
 
 
-        return isAcceptable ? diff : null;
+        return isAcceptable ? Duo.duo(diff, selectedTime) : null;
     }
 
     @SuppressWarnings("unchecked")
@@ -270,7 +289,7 @@ public class SSGSService {
             , Graph<Task<TimeType, PayloadType, AmountType>, EdgeType> graph
             , Task<TimeType, PayloadType, AmountType> task
             , Quartet<Long, Long, Long, Long> taskTime) {
-        logger.info("[calcTImeRange]");
+        logger.info("[calcTimeRange]");
         GraphUtil.TimeCalculator<TimeType, Task<TimeType, PayloadType, AmountType>, EdgeType> timeCalculator = (GraphUtil.TimeCalculator<TimeType, Task<TimeType, PayloadType, AmountType>, EdgeType>)context.get(TIME_CALCULATOR);
         GraphUtil.TimeExtractor<Task<TimeType, PayloadType, AmountType>> timeExtractor = (GraphUtil.TimeExtractor<Task<TimeType, PayloadType, AmountType>>)context.get(TIME_EXTRACTOR);
         //RangeUtil.AmountCalculator<AmountType> amountCalculator = (RangeUtil.AmountCalculator<AmountType>)context.get(AMOUNT_CALCULATOR);
@@ -278,7 +297,9 @@ public class SSGSService {
         TimeType latestEndTime = graph.incomingEdgesOf(task).stream().map(e-> {
             Task<TimeType, PayloadType, AmountType> predecessor = graph.getEdgeSource(e);
             return predecessor.getPlannedEndTime();
-        }).sorted(Comparator.reverseOrder()).findFirst().orElse(null);
+        }).sorted(Comparator.reverseOrder()).findFirst().orElse(timeCalculator.zero());
+
+        logger.info("latestEndTime : {}", latestEndTime);
 
         return Duo.duo(latestEndTime, timeCalculator.plus(latestEndTime, timeCalculator.fromLong(graph, task, timeExtractor.duration(task))));
     }
@@ -287,7 +308,8 @@ public class SSGSService {
     <TimeType extends Comparable<TimeType>, AmountType extends Comparable<AmountType>, PayloadType>
     Resource<TimeType, AmountType> chooseResource(Map<String, Object> context
             , Map<String, Resource<TimeType, AmountType>> resources
-            , Task<TimeType, PayloadType, AmountType> task, Map<String, AmountType> diff) {
+            , Task<TimeType, PayloadType, AmountType> task
+            , Map<String, AmountType> diff) {
         logger.info("[chooseResource]");
         return new ArrayList<>(resources.values()).get(0);
     }
@@ -300,7 +322,9 @@ public class SSGSService {
 
     private
     <TimeType extends Comparable<TimeType>, AmountType extends Comparable<AmountType>, PayloadType>
-    void updateTask(Map<String, Object> context, Task<TimeType, PayloadType, AmountType> task) {
-        logger.info("[updateTask] task : {}", task);
+    void updateTask(Map<String, Object> context, Task<TimeType, PayloadType, AmountType> task, Duo<TimeType, TimeType> time) {
+        logger.info("[updateTask] task : {}, time : {}", task, time);
+        task.setPlannedStartTime(time.getK());
+        task.setPlannedEndTime(time.getV());
     }
 }

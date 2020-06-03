@@ -29,6 +29,8 @@ public class RangeUtil {
            , Duo<TimeType, TimeType> selected
            , AmountCalculator<AmountType> amountCalculator
            , ResourceAmountProvider<TimeType, AmountType> resourceAmountProvider) {
+      logger.info("[resourceCalculationByTimeRange]");
+
       boolean ret = true;
 
       List<TimeType> splitters = getRangeSplitter(ranges, selected).stream().sorted().collect(Collectors.toList());
@@ -46,6 +48,7 @@ public class RangeUtil {
          }
 
          AmountType resourceThreshold = resourceAmountProvider.getResourceByTimeRange(r.getK(), r.getV());
+
          logger.info("r : {}, amount : {}, resource : {}", r, amount, resourceThreshold);
 
          ret = resourceThreshold.compareTo(amount) >= 0;
@@ -63,6 +66,7 @@ public class RangeUtil {
    public static
    <TimeType extends Comparable<TimeType>>
    Set<TimeType> getRangeSplitter(List<Duo<TimeType, TimeType>> ranges, Duo<TimeType, TimeType> selected) {
+      logger.info("[getRangeSplitter] ranges : {}, selected : {}", ranges, selected);
       Set<TimeType> splitters = new HashSet<>();
 
       splitters.add(selected.getK());
@@ -99,18 +103,18 @@ public class RangeUtil {
    private static
    <TimeType extends Comparable<TimeType>>
    TimeType min(TimeType v1, TimeType v2) {
-      return v1.compareTo(v2) <= 0 ? v1 : v2;
+      return v1 != null ? (v1.compareTo(v2) <= 0 ? v1 : v2) : v2;
    }
 
    private static
    <TimeType extends Comparable<TimeType>>
    TimeType max(TimeType v1, TimeType v2) {
-      return v1.compareTo(v2) >= 0 ? v1 : v2;
+      return v1 != null && v2 != null ? (v1.compareTo(v2) >= 0 ? v1 : v2) : v2;
    }
 
    private static
    <TimeType extends Comparable<TimeType>>
    boolean isEmptyRange(Duo<TimeType, TimeType> inteorsect) {
-      return inteorsect.getK().compareTo(inteorsect.getV()) >= 0;
+      return inteorsect.getK() != null && inteorsect.getV() != null && (inteorsect.getK().compareTo(inteorsect.getV()) >= 0);
    }
 }
