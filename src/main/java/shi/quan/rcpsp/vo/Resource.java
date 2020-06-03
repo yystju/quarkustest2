@@ -1,20 +1,22 @@
 package shi.quan.rcpsp.vo;
 
+import shi.quan.rcpsp.util.RangeUtil;
+
 import java.util.Comparator;
 
-public class Resource<AmountType extends Comparable<AmountType>> implements Comparable<Resource<AmountType>> {
+public class Resource<TimeType extends Comparable<TimeType>, AmountType extends Comparable<AmountType>> implements Comparable<Resource<TimeType, AmountType>> {
     private String id;
     private String name;
 
-    private AmountType amount;
+    RangeUtil.ResourceAmountProvider<TimeType, AmountType> provider;
 
     public Resource() {
     }
 
-    public Resource(String id, String name, AmountType amount) {
+    public Resource(String id, String name, RangeUtil.ResourceAmountProvider<TimeType, AmountType> provider) {
         this.id = id;
         this.name = name;
-        this.amount = amount;
+        this.provider = provider;
     }
 
     @Override
@@ -22,15 +24,14 @@ public class Resource<AmountType extends Comparable<AmountType>> implements Comp
         return "Resource{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
-                ", amount=" + amount +
                 '}';
     }
 
     @Override
-    public int compareTo(Resource<AmountType> o) {
+    public int compareTo(Resource<TimeType, AmountType> o) {
         return Comparator
-                .comparing(Resource<AmountType>::getId)
-                .thenComparing(Resource<AmountType>::getAmount)
+                .comparing(Resource<TimeType, AmountType>::getId)
+                .thenComparing(Resource<TimeType, AmountType>::getName)
                 .compare(this, o);
     }
 
@@ -50,11 +51,11 @@ public class Resource<AmountType extends Comparable<AmountType>> implements Comp
         this.name = name;
     }
 
-    public AmountType getAmount() {
-        return amount;
+    public RangeUtil.ResourceAmountProvider<TimeType, AmountType> getProvider() {
+        return provider;
     }
 
-    public void setAmount(AmountType amount) {
-        this.amount = amount;
+    public void setProvider(RangeUtil.ResourceAmountProvider<TimeType, AmountType> provider) {
+        this.provider = provider;
     }
 }

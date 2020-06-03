@@ -57,7 +57,7 @@ public class RangeTest {
 
         Duo<Integer, Integer> selected = ranges.get((int)(Math.random() * ranges.size()));
 
-        boolean result = RangeUtil.resourceCalculationByTimeRange(ranges, resourceMap, selected, new RangeUtil.AmountCalculator<Integer>() {
+        boolean result = RangeUtil.resourceCalculationByTimeRange(ranges, resourceMap, selected, new RangeUtil.AmountCalculator<>() {
             @Override
             public Integer zero() {
                 return 0;

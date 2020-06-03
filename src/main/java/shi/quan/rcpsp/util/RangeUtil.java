@@ -14,6 +14,7 @@ public class RangeUtil {
       AmountType zero();
       AmountType plus(AmountType a, AmountType b);
       AmountType minus(AmountType a, AmountType b);
+
    }
 
    public interface ResourceAmountProvider<TimeType, AmountType> {

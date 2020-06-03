@@ -9,8 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import shi.quan.common.exception.BuzzException;
 import shi.quan.rcpsp.service.SSGSService;
+import shi.quan.rcpsp.util.GraphUtil;
+import shi.quan.rcpsp.util.RangeUtil;
 import shi.quan.rcpsp.vo.PrecedenceDiagrammingConstraint;
 import shi.quan.rcpsp.vo.Relationship;
+import shi.quan.rcpsp.vo.Resource;
 import shi.quan.rcpsp.vo.Task;
 
 import javax.inject.Inject;
@@ -63,17 +66,60 @@ public class SSGSServiceTest {
 
         logger.info("graph : {}", graph);
 
-        Object resource = new Object();
+        Map<String, Resource<Long, Integer>> resources = new HashMap<>();
 
-        Map<Task<Long, Integer, Integer>, Long> durationMap = new HashMap<>();
+        RangeUtil.AmountCalculator<Integer> amountCalculator = new RangeUtil.AmountCalculator<>() {
+            @Override
+            public Integer zero() {
+                return 0;
+            }
 
-        for(Task<Long, Integer, Integer> task : graph.vertexSet()) {
-            durationMap.put(task, (long)task.getPayload());
-        }
+            @Override
+            public Integer plus(Integer a, Integer b) {
+                return a + b;
+            }
 
-        context.put(SSGSService.DURATION_MAP, durationMap);
+            @Override
+            public Integer minus(Integer a, Integer b) {
+                return a - b;
+            }
+        };
 
-        ssgsService.ssgs(context, graph, resource, 100);
+        GraphUtil.TimeCalculator<Long, Task<Long, Integer, Integer>, DefaultEdge> timeCalculator = new GraphUtil.TimeCalculator<>() {
+            @Override
+            public Long zero() {
+                return 0L;
+            }
+
+            @Override
+            public Long now() {
+                return System.currentTimeMillis();
+            }
+
+            @Override
+            public Long plus(Long a, Long b) {
+                return a + b;
+            }
+
+            @Override
+            public Long minus(Long a, Long b) {
+                return a - b;
+            }
+
+            @Override
+            public Long fromLong(Graph<Task<Long, Integer, Integer>, DefaultEdge> graph, Task<Long, Integer, Integer> task, long value) {
+                return (long)task.getPayload();
+            }
+        };
+
+        GraphUtil.TimeExtractor<Task<Long, Integer, Integer>> timeExtractor = new GraphUtil.TimeExtractor<Task<Long, Integer, Integer>>() {
+            @Override
+            public long duration(Task<Long, Integer, Integer> task) {
+                return task.getPayload();
+            }
+        };
+
+        ssgsService.ssgs(context, graph, resources, amountCalculator, timeCalculator, timeExtractor, 100);
     }
 
 }

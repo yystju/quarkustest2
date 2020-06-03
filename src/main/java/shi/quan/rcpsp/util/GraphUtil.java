@@ -15,6 +15,16 @@ public class GraphUtil {
         long duration(V v);
     }
 
+    public interface TimeCalculator<TimeType, V, E> {
+        TimeType zero();
+        TimeType now();
+
+        TimeType plus(TimeType a, TimeType b);
+        TimeType minus(TimeType a, TimeType b);
+
+        TimeType fromLong(Graph<V, E> graph, V task, long value);
+    }
+
     /**
      * See https://youtu.be/-TDh-5n90vk for details...
      * Quartet<Long, Long, Long, Long> -> ES, EF, LS, LF

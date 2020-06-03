@@ -18,6 +18,10 @@ public class Task<TimeType extends Comparable<TimeType>, PayloadType, AmountType
 
     private TimeEstimationStrategy<TimeType> strategy;
 
+
+    private TimeType plannedStartTime;
+    private TimeType plannedEndTime;
+
     public Task() {
     }
 
@@ -124,5 +128,21 @@ public class Task<TimeType extends Comparable<TimeType>, PayloadType, AmountType
 
     public void setResourceMap(Map<String, AmountType> resourceMap) {
         this.resourceMap = resourceMap;
+    }
+
+    public TimeType getPlannedStartTime() {
+        return plannedStartTime;
+    }
+
+    public void setPlannedStartTime(TimeType plannedStartTime) {
+        this.plannedStartTime = plannedStartTime;
+    }
+
+    public TimeType getPlannedEndTime() {
+        return plannedEndTime;
+    }
+
+    public void setPlannedEndTime(TimeType plannedEndTime) {
+        this.plannedEndTime = plannedEndTime;
     }
 }
