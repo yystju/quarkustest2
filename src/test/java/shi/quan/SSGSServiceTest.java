@@ -17,8 +17,7 @@ import shi.quan.rcpsp.vo.Resource;
 import shi.quan.rcpsp.vo.Task;
 
 import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @QuarkusTest
 public class SSGSServiceTest {
@@ -75,6 +74,97 @@ public class SSGSServiceTest {
         Map<String, Resource<Long, Integer>> resources = new HashMap<>();
 
         resources.put("1", new Resource<>("1", "Resource 1", (start, end) -> 3));
+
+        RangeUtil.AmountCalculator<Integer> amountCalculator = new RangeUtil.AmountCalculator<>() {
+            @Override
+            public Integer zero() {
+                return 0;
+            }
+
+            @Override
+            public Integer plus(Integer a, Integer b) {
+                return (a != null ? a : 0) + (b != null ? b : 0);
+            }
+
+            @Override
+            public Integer minus(Integer a, Integer b) {
+                return (a != null ? a : 0) - (b != null ? b : 0);
+            }
+        };
+
+        GraphUtil.TimeCalculator<Long, Task<Long, Integer, Integer>, DefaultEdge> timeCalculator = new GraphUtil.TimeCalculator<>() {
+            @Override
+            public Long zero() {
+                return 0L;
+            }
+
+            @Override
+            public Long now() {
+                return System.currentTimeMillis();
+            }
+
+            @Override
+            public Long plus(Long a, Long b) {
+                return (a != null ? a : 0L) + (b != null ? b : 0L);
+            }
+
+            @Override
+            public Long minus(Long a, Long b) {
+                return (a != null ? a : 0L) - (b != null ? b : 0L);
+            }
+
+            @Override
+            public Long fromLong(Graph<Task<Long, Integer, Integer>, DefaultEdge> graph, Task<Long, Integer, Integer> task, long value) {
+                return (long)task.getPayload();
+            }
+        };
+
+        GraphUtil.TimeExtractor<Task<Long, Integer, Integer>> timeExtractor = task -> task.getPayload();
+
+        ssgsService.ssgs(context, graph, resources, amountCalculator, timeCalculator, timeExtractor, 100);
+    }
+
+    @Test
+    public void test2() throws BuzzException {
+        Map<String, Object> context = new HashMap<>();
+
+        Graph<Task<Long, Integer, Integer>, DefaultEdge> graph = GraphTypeBuilder
+                .<Task<Long, Integer, Integer>, DefaultEdge> directed()
+                .allowingMultipleEdges(false)
+                .allowingSelfLoops(false)
+                .edgeClass(DefaultEdge.class)
+                .weighted(true)
+                .buildGraph();
+
+        int N = 10;
+        int M = 5;
+
+        for(int i = 0; i < N; ++i) {
+            Task<Long, Integer, Integer> task = new Task<>(String.format("%d", i), String.format("Task%d", i), ((int)(Math.random() * 5.0) * 10));
+            for(int j = 0; j < M; ++j) {
+                task.getResourceMap().put(String.format("%d", j), 1);
+            }
+            graph.addVertex(task);
+        }
+
+        Set<Task<Long, Integer, Integer>> vertices = graph.vertexSet();
+
+        for(Task<Long, Integer, Integer> v1 : vertices) {
+           for(Task<Long, Integer, Integer> v2: vertices) {
+               if(v1.compareTo(v2) < 0) {
+                   graph.addEdge(v1, v2);
+               }
+           }
+        }
+
+        logger.info("graph : {}", graph);
+
+        Map<String, Resource<Long, Integer>> resources = new HashMap<>();
+
+        for(int i = 0; i < M; ++i) {
+            String id = String.format("%d", i);
+            resources.put(id, new Resource<>(id, String.format("Resource %d", i), (start, end) -> 50));
+        }
 
         RangeUtil.AmountCalculator<Integer> amountCalculator = new RangeUtil.AmountCalculator<>() {
             @Override

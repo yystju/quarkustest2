@@ -50,8 +50,9 @@ public class SSGSService {
 
         Set<Task<TimeType, PayloadType, AmountType>> lastAvailableTasks = null;
 
-        Set<Task<TimeType, PayloadType, AmountType>> visited = new HashSet<>();
         Set<Task<TimeType, PayloadType, AmountType>> proceededTasks = new HashSet<>();
+
+        Set<Task<TimeType, PayloadType, AmountType>> visited;
 
         if (uBound < 0L) {
             uBound = 5000L;
@@ -65,6 +66,8 @@ public class SSGSService {
             }
 
             loopCount++;
+
+            visited = new HashSet<>(proceededTasks);
 
             List<Task<TimeType, PayloadType, AmountType>> availableTasks = getCurrentAvailableTasks(context, graph, visited);
 
@@ -83,8 +86,10 @@ public class SSGSService {
             logger.info("[MAIN LOOP] loopCount : {}, availableTasks : {}", loopCount, availableTasks);
 
             if (availableTasks.isEmpty()) {
+                Set<Task<TimeType, PayloadType, AmountType>> finalVisited = visited;
+
                 List<Task<TimeType, PayloadType, AmountType>> unvisited = graph.vertexSet().stream()
-                        .filter(t -> !visited.contains(t))
+                        .filter(t -> !finalVisited.contains(t))
                         .collect(Collectors.toList());
 
                 if (!unvisited.isEmpty()) {
@@ -99,7 +104,7 @@ public class SSGSService {
                 Task<TimeType,PayloadType,AmountType> task = chooseTask(context, availableTasks);
 
                 if (task == null && availableTasks.isEmpty()) {
-                    logger.info("[FINISHED] proceededTasks : {}", proceededTasks.stream().map(t->Duo.duo(t.getPlannedStartTime(), t.getPlannedEndTime())).collect(Collectors.toList()));
+                    dumpProceededTasks(proceededTasks);
                     break;
                 } else if (task == null) {
                     logger.error("Failed to choose a task from availableTasks : {}", availableTasks);
@@ -130,6 +135,7 @@ public class SSGSService {
             }
         }
     }
+
 
     @SuppressWarnings("unchecked")
     private
@@ -326,5 +332,18 @@ public class SSGSService {
         logger.info("[updateTask] task : {}, time : {}", task, time);
         task.setPlannedStartTime(time.getK());
         task.setPlannedEndTime(time.getV());
+    }
+
+    private
+    <AmountType extends Comparable<AmountType>, TimeType extends Comparable<TimeType>, PayloadType>
+    void dumpProceededTasks(Set<Task<TimeType,PayloadType,AmountType>> proceededTasks) {
+        List<Task<TimeType, PayloadType, AmountType>> sorted = proceededTasks.stream()
+                        .sorted(Comparator.comparing(Task::getPlannedStartTime))
+                        .collect(Collectors.toList());
+
+        for(Task<TimeType, PayloadType, AmountType> task : sorted) {
+            logger.info("[DUMP] {{} : ({}, {} | {})}", task.getName(), task.getPlannedStartTime(), task.getPlannedEndTime(), task.getPayload());
+        }
+
     }
 }
