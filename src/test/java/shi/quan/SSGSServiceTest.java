@@ -150,9 +150,9 @@ public class SSGSServiceTest {
 
 //        context.put(SSGSService.VERBOSE, "true");
 
-        int HORIZONTAL = 50;
-        int VERTICAL = 50;
-        int RESOURCE_SIZE = 16;
+        int HORIZONTAL = 4;
+        int VERTICAL = 4;
+        int RESOURCE_SIZE = 1;
         int RESOURCE_INSTANCE_SIZE = 25;
         int RESOURCE_INSTANCE_CAP = 25;
         int uBound = 100000;
@@ -205,7 +205,7 @@ public class SSGSServiceTest {
 
                 @Override
                 public Long getResourceExtraTime(Long start, Long end) {
-                    return 2L;
+                    return 0L;
                 }
             });
 
