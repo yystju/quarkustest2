@@ -150,8 +150,8 @@ public class SSGSServiceTest {
 
 //        context.put(SSGSService.VERBOSE, "true");
 
-        int HORIZONTAL = 100;
-        int VERTICAL = 100;
+        int HORIZONTAL = 50;
+        int VERTICAL = 50;
         int RESOURCE_SIZE = 16;
         int RESOURCE_INSTANCE_SIZE = 25;
         int RESOURCE_INSTANCE_CAP = 25;
