@@ -11,12 +11,10 @@ import shi.quan.common.exception.BuzzException;
 import shi.quan.rcpsp.service.SSGSService;
 import shi.quan.rcpsp.util.GraphUtil;
 import shi.quan.rcpsp.util.RangeUtil;
-import shi.quan.rcpsp.vo.PrecedenceDiagrammingConstraint;
-import shi.quan.rcpsp.vo.Relationship;
-import shi.quan.rcpsp.vo.Resource;
-import shi.quan.rcpsp.vo.Task;
+import shi.quan.rcpsp.vo.*;
 
 import javax.inject.Inject;
+import java.sql.Time;
 import java.util.*;
 
 @QuarkusTest
@@ -73,7 +71,21 @@ public class SSGSServiceTest {
 
         Map<String, Resource<Long, Integer>> resources = new HashMap<>();
 
-        resources.put("1", new Resource<>("1", "Resource 1", (start, end) -> 3));
+        Resource<Long, Integer> resource = new Resource<Long, Integer>("0", "Resource 1", new RangeUtil.ResourceAmountProvider<>() {
+            @Override
+            public Integer getResourceByTimeRange(Long start, Long end) {
+                return 1;
+            }
+
+            @Override
+            public Long getResourceExtraTime(Long start, Long end) {
+                return 1L;
+            }
+        });
+
+        resource.getInstanceList().add(new ResourceInstance<Long, Integer>(resource, "1", "Resource Instance 1", null));
+
+        resources.put("1", resource);
 
         RangeUtil.AmountCalculator<Integer> amountCalculator = new RangeUtil.AmountCalculator<>() {
             @Override
@@ -136,34 +148,72 @@ public class SSGSServiceTest {
                 .weighted(true)
                 .buildGraph();
 
-        int N = 10;
-        int M = 5;
+//        context.put(SSGSService.VERBOSE, "true");
 
-        for(int i = 0; i < N; ++i) {
-            Task<Long, Integer, Integer> task = new Task<>(String.format("%d", i), String.format("Task%d", i), ((int)(Math.random() * 5.0) * 10));
-            for(int j = 0; j < M; ++j) {
-                task.getResourceMap().put(String.format("%d", j), 1);
+        int HORIZONTAL = 100;
+        int VERTICAL = 100;
+        int RESOURCE_SIZE = 16;
+        int RESOURCE_INSTANCE_SIZE = 25;
+        int RESOURCE_INSTANCE_CAP = 25;
+        int uBound = 100000;
+
+        ArrayList<ArrayList<Task<Long, Integer, Integer>>> tasksArray = new ArrayList<>();
+
+        for(int i = 1; i <= HORIZONTAL; ++i) {
+            ArrayList<Task<Long, Integer, Integer>> tasks = new ArrayList<>();
+            for(int j = 1; j <= VERTICAL; ++j) {
+                String id = String.format("%05d::%05d", i, j);
+                int payload = 10; // ((int)(Math.random() * 5.0) * 10 + 10);
+                Task<Long, Integer, Integer> task = new Task<>(id, String.format("TASK %s", id), payload);
+
+                for(int k = 1; k <= RESOURCE_SIZE; ++k) {
+                    task.getResourceMap().put(String.format("%05d", k), 1);
+                }
+
+                graph.addVertex(task);
+
+                tasks.add(task);
             }
-            graph.addVertex(task);
+
+            tasksArray.add(tasks);
         }
 
-        Set<Task<Long, Integer, Integer>> vertices = graph.vertexSet();
+        for(int i = 0; i < tasksArray.size(); ++i) {
+            ArrayList<Task<Long, Integer, Integer>> tasks = tasksArray.get(i);
+            for(int j = 0; j < tasks.size(); ++j) {
+                if(j != 0) {
+                    graph.addEdge(tasks.get(j -1), tasks.get(j));
+                }
 
-        for(Task<Long, Integer, Integer> v1 : vertices) {
-           for(Task<Long, Integer, Integer> v2: vertices) {
-               if(v1.compareTo(v2) < 0) {
-                   graph.addEdge(v1, v2);
-               }
-           }
+                if(i != 0) {
+                    graph.addEdge(tasksArray.get(i - 1).get(j), tasks.get(j));
+                }
+            }
         }
 
         logger.info("graph : {}", graph);
 
         Map<String, Resource<Long, Integer>> resources = new HashMap<>();
 
-        for(int i = 0; i < M; ++i) {
-            String id = String.format("%d", i);
-            resources.put(id, new Resource<>(id, String.format("Resource %d", i), (start, end) -> 50));
+        for(int i = 1; i <= RESOURCE_SIZE; ++i) {
+            String id = String.format("%05d", i);
+            Resource<Long, Integer> resource =  new Resource<>(id, String.format("RESOURCE %s", id), new RangeUtil.ResourceAmountProvider<Long, Integer>() {
+                @Override
+                public Integer getResourceByTimeRange(Long start, Long end) {
+                    return RESOURCE_INSTANCE_CAP;
+                }
+
+                @Override
+                public Long getResourceExtraTime(Long start, Long end) {
+                    return 2L;
+                }
+            });
+
+            for(int j = 1; j <= RESOURCE_INSTANCE_SIZE; ++j) {
+                String instanceId = String.format("%05d::%05d", i, j);
+                resource.getInstanceList().add(new ResourceInstance(resource, instanceId, String.format("Resource Instance %s", instanceId), null));
+            }
+            resources.put(id, resource);
         }
 
         RangeUtil.AmountCalculator<Integer> amountCalculator = new RangeUtil.AmountCalculator<>() {
@@ -206,13 +256,13 @@ public class SSGSServiceTest {
 
             @Override
             public Long fromLong(Graph<Task<Long, Integer, Integer>, DefaultEdge> graph, Task<Long, Integer, Integer> task, long value) {
-                return (long)task.getPayload();
+                return (long)value;
             }
         };
 
         GraphUtil.TimeExtractor<Task<Long, Integer, Integer>> timeExtractor = task -> task.getPayload();
 
-        ssgsService.ssgs(context, graph, resources, amountCalculator, timeCalculator, timeExtractor, 100);
+        ssgsService.ssgs(context, graph, resources, amountCalculator, timeCalculator, timeExtractor, uBound);
     }
 
 }

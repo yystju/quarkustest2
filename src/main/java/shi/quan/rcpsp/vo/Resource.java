@@ -2,11 +2,15 @@ package shi.quan.rcpsp.vo;
 
 import shi.quan.rcpsp.util.RangeUtil;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 public class Resource<TimeType extends Comparable<TimeType>, AmountType extends Comparable<AmountType>> implements Comparable<Resource<TimeType, AmountType>> {
     private String id;
     private String name;
+
+    private List<ResourceInstance<TimeType, AmountType>> instanceList = new ArrayList<>();
 
     RangeUtil.ResourceAmountProvider<TimeType, AmountType> provider;
 
@@ -57,5 +61,13 @@ public class Resource<TimeType extends Comparable<TimeType>, AmountType extends 
 
     public void setProvider(RangeUtil.ResourceAmountProvider<TimeType, AmountType> provider) {
         this.provider = provider;
+    }
+
+    public List<ResourceInstance<TimeType, AmountType>> getInstanceList() {
+        return instanceList;
+    }
+
+    public void setInstanceList(List<ResourceInstance<TimeType, AmountType>> instanceList) {
+        this.instanceList = instanceList;
     }
 }

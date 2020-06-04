@@ -22,6 +22,8 @@ public class Task<TimeType extends Comparable<TimeType>, PayloadType, AmountType
     private TimeType plannedStartTime;
     private TimeType plannedEndTime;
 
+    private Map<String, ResourceInstance<TimeType, AmountType>> chosenResources;
+
     public Task() {
     }
 
@@ -50,7 +52,7 @@ public class Task<TimeType extends Comparable<TimeType>, PayloadType, AmountType
 
     @Override
     public String toString() {
-        return String.format("%s(%s)", this.name, this.id);
+        return String.format("%s(%s)", String.valueOf(this.id), String.valueOf(this.payload));
     }
 
     @Override
@@ -144,5 +146,13 @@ public class Task<TimeType extends Comparable<TimeType>, PayloadType, AmountType
 
     public void setPlannedEndTime(TimeType plannedEndTime) {
         this.plannedEndTime = plannedEndTime;
+    }
+
+    public Map<String, ResourceInstance<TimeType, AmountType>> getChosenResources() {
+        return chosenResources;
+    }
+
+    public void setChosenResources(Map<String, ResourceInstance<TimeType, AmountType>> chosenResources) {
+        this.chosenResources = chosenResources;
     }
 }

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import shi.quan.common.exception.BuzzException;
 import shi.quan.common.vo.Duo;
 import shi.quan.rcpsp.service.SSGSService;
+import shi.quan.rcpsp.util.GraphUtil;
 import shi.quan.rcpsp.util.RangeUtil;
 import shi.quan.rcpsp.vo.Task;
 
@@ -35,7 +36,7 @@ public class RangeTest {
 
         Duo<Integer, Integer> selected = ranges.get((int)(Math.random() * ranges.size()));
 
-        RangeUtil.getRangeSplitter(ranges, selected);
+        RangeUtil.getRangeSplitter(true, ranges, selected);
     }
     @Test
     public void test2() throws BuzzException {
@@ -57,7 +58,7 @@ public class RangeTest {
 
         Duo<Integer, Integer> selected = ranges.get((int)(Math.random() * ranges.size()));
 
-        boolean result = RangeUtil.resourceCalculationByTimeRange(ranges, resourceMap, selected, new RangeUtil.AmountCalculator<>() {
+        boolean result = RangeUtil.resourceCalculationByTimeRange(true, ranges, resourceMap, selected, new RangeUtil.AmountCalculator<>() {
             @Override
             public Integer zero() {
                 return 0;
@@ -72,7 +73,17 @@ public class RangeTest {
             public Integer minus(Integer a, Integer b) {
                 return a - b;
             }
-        }, (start, end) -> 8);
+        }, new RangeUtil.ResourceAmountProvider<Integer, Integer>() {
+            @Override
+            public Integer getResourceByTimeRange(Integer start, Integer end) {
+                return 8;
+            }
+
+            @Override
+            public Integer getResourceExtraTime(Integer start, Integer end) {
+                return 0;
+            }
+        });
 
         logger.info("result : {}", result);
 
