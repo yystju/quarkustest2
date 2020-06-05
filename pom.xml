@@ -84,7 +84,6 @@
       <artifactId>antlr4-runtime</artifactId>
       <version>4.8</version>
     </dependency>
-
   </dependencies>
   <build>
     <plugins>

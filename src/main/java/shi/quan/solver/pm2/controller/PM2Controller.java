@@ -69,10 +69,14 @@ public class PM2Controller {
 
     protected PM2Solution getPMById(Long id) {
         List<Workplace> workplaceList = new ArrayList<>();
-        workplaceList.add(new Workplace(1L, "Workplace 1", 5));
-        workplaceList.add(new Workplace(2L, "Workplace 2", 7));
-        workplaceList.add(new Workplace(3L, "Workplace 3", 7));
-        workplaceList.add(new Workplace(4L, "Workplace 4", 9));
+//        workplaceList.add(new Workplace(1L, "Workplace 1", 5));
+//        workplaceList.add(new Workplace(2L, "Workplace 2", 7));
+//        workplaceList.add(new Workplace(3L, "Workplace 3", 7));
+//        workplaceList.add(new Workplace(4L, "Workplace 4", 9));
+
+        for(int i = 1; i <= 70; ++i) {
+            workplaceList.add(new Workplace((long)i, String.format("Workplace %d", i), (i % 10) == 0 ? 9 : (i % 2 == 0) ? 7 : 5));
+        }
 
         List<Timeslot> timeslotList = new ArrayList<>();
 

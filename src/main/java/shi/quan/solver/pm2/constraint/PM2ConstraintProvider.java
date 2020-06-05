@@ -4,22 +4,11 @@ import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.optaplanner.core.api.score.stream.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import shi.quan.common.Pair;
+import shi.quan.common.vo.Duo;
 import shi.quan.solver.pm2.util.DateTimeUtil;
 import shi.quan.solver.pm2.vo.Task;
 import shi.quan.solver.pm2.vo.Timeslot;
 import shi.quan.solver.pm2.vo.Workplace;
-
-import javax.inject.Inject;
-import javax.resource.spi.work.Work;
-import java.sql.Time;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.function.BiFunction;
-import java.util.function.ToIntFunction;
 
 public class PM2ConstraintProvider implements ConstraintProvider {
     private static final Logger logger = LoggerFactory.getLogger(PM2ConstraintProvider.class);
@@ -105,7 +94,7 @@ public class PM2ConstraintProvider implements ConstraintProvider {
                 .join(Task.class)
                 .join(Workplace.class)
                 .filter(((timeslot, task, workplace) -> DateTimeUtil.isTimeOverlap(timeslot, task) && task.getWorkplace().getId() == workplace.getId()))
-                .groupBy((timeslot, task, workplace) -> Pair.pair(timeslot, workplace), ConstraintCollectors.toList((timeslot, task, workplace) -> task))
+                .groupBy((timeslot, task, workplace) -> Duo.duo(timeslot, workplace), ConstraintCollectors.toList((timeslot, task, workplace) -> task))
                 .filter(((keyPair, tasks) -> {
                     long slotDuration = keyPair.getK().getDuration();
 
