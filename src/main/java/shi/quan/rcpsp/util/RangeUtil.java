@@ -107,25 +107,25 @@ public class RangeUtil {
       return splitters;
    }
 
-   private static
+   public static
    <TimeType extends Comparable<TimeType>>
    Duo<TimeType,TimeType> intersect(Duo<TimeType,TimeType> range, Duo<TimeType,TimeType> selected) {
       return Duo.duo(max(range.getK(), selected.getK()), min(range.getV(), selected.getV()));
    }
 
-   private static
+   public static
    <TimeType extends Comparable<TimeType>>
    TimeType min(TimeType v1, TimeType v2) {
       return v1 != null ? (v1.compareTo(v2) <= 0 ? v1 : v2) : v2;
    }
 
-   private static
+   public static
    <TimeType extends Comparable<TimeType>>
    TimeType max(TimeType v1, TimeType v2) {
       return v1 != null && v2 != null ? (v1.compareTo(v2) >= 0 ? v1 : v2) : v2;
    }
 
-   private static
+   public static
    <TimeType extends Comparable<TimeType>>
    boolean isEmptyRange(Duo<TimeType, TimeType> inteorsect) {
       return inteorsect.getK() != null && inteorsect.getV() != null && (inteorsect.getK().compareTo(inteorsect.getV()) >= 0);
