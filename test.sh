@@ -1,3 +1,2 @@
 #!/bin/bash
-mvn test -Dtest=shi.quan.SSGSServiceTest#test2
-
+mvn -Dtest=shi.quan.SSGSServiceTest#test2 antlr4:antlr4 install test

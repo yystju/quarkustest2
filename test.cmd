@@ -1,1 +1,1 @@
-mvn -Dtest=shi.quan.SSGSServiceTest#test2 test
+mvn -Dtest=shi.quan.SSGSServiceTest#test2 antlr4:antlr4 install test
