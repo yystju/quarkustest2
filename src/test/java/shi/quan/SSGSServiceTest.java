@@ -153,9 +153,9 @@ public class SSGSServiceTest {
         int HORIZONTAL = 4;
         int VERTICAL = 4;
         int RESOURCE_SIZE = 1;
-        int RESOURCE_INSTANCE_SIZE = 25;
-        int RESOURCE_INSTANCE_CAP = 25;
-        int uBound = 100000;
+        int RESOURCE_INSTANCE_SIZE = 2;
+        int RESOURCE_INSTANCE_CAP = 2;
+        int uBound = 1000;
 
         ArrayList<ArrayList<Task<Long, Integer, Integer>>> tasksArray = new ArrayList<>();
 

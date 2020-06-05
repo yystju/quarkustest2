@@ -337,7 +337,7 @@ public class SSGSService {
             Map<Duo<TimeType, TimeType>, AmountType> resourceMap = new HashMap<>();
 
             for(Task<TimeType, PayloadType, AmountType> v : visited) {
-                if(task.getResourceMap().containsKey(resourceId)) {
+                if(v.getResourceMap().containsKey(resourceId)) {
                     if(verbose) logger.info("v : {}", v);
                     Duo<TimeType, TimeType> duo = (v != task) ? Duo.duo(v.getPlannedStartTime(), v.getPlannedEndTime()) : selectedTime;
                     if(verbose) logger.info("duo : {}", duo);
@@ -358,7 +358,26 @@ public class SSGSService {
             context.put(LAST_SELECTED_TIME, selectedTime);
 
             for(ResourceInstance<TimeType, AmountType> instance : resource.getInstanceList()) {
-                if(RangeUtil.resourceCalculationByTimeRange(verbose, ranges, resourceMap, selectedTime, amountCalculator, instance.getProvider())) {
+                List<Duo<TimeType, TimeType>> rangesByInstance = new ArrayList<>();
+                Map<Duo<TimeType, TimeType>, AmountType> resourceMapByInstance = new HashMap<>();
+
+                for(Task<TimeType, PayloadType, AmountType> v : visited) {
+                    if(v.getResourceMap().containsKey(resourceId) && v.getChosenResources().values().contains(instance)) {
+                        if(verbose) logger.info("instance : {}, v : {}", instance, v);
+                        Duo<TimeType, TimeType> duo = (v != task) ? Duo.duo(v.getPlannedStartTime(), v.getPlannedEndTime()) : selectedTime;
+                        if(verbose) logger.info("instance : {}, duo : {}", instance, duo);
+                        rangesByInstance.add(duo);
+                        resourceMapByInstance.put(duo, task.getResourceMap().get(resourceId));
+                    }
+                }
+
+                if(!visited.contains(task)) {
+                    rangesByInstance.add(selectedTime);
+                    resourceMapByInstance.put(selectedTime, task.getResourceMap().get(resourceId));
+                }
+
+
+                if(RangeUtil.resourceCalculationByTimeRange(verbose, rangesByInstance, resourceMapByInstance, selectedTime, amountCalculator, instance.getProvider())) {
                     if(!availableResourceInstanceMap.containsKey(resourceId)) {
                         availableResourceInstanceMap.put(resourceId, new ArrayList<>());
                     }
