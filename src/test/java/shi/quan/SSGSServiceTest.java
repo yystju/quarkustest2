@@ -147,14 +147,15 @@ public class SSGSServiceTest {
                 .edgeClass(DefaultEdge.class)
                 .weighted(true)
                 .buildGraph();
-
+//
 //        context.put(SSGSService.VERBOSE, "true");
+//
 
-        int HORIZONTAL = 4;
-        int VERTICAL = 4;
+        int HORIZONTAL = 60;
+        int VERTICAL = 60;
         int RESOURCE_SIZE = 1;
-        int RESOURCE_INSTANCE_SIZE = 2;
-        int RESOURCE_INSTANCE_CAP = 2;
+        int RESOURCE_INSTANCE_SIZE = 50;
+        int RESOURCE_INSTANCE_CAP = 1;
         int uBound = 1000;
 
         ArrayList<ArrayList<Task<Long, Integer, Integer>>> tasksArray = new ArrayList<>();
