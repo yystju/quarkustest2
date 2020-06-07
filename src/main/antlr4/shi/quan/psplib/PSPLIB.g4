@@ -1,32 +1,65 @@
 grammar PSPLIB;
 
-model :	(line NEWLINE)* ;
+model : file_header
+        header_info
+        project_information
+        precedence_relations
+        requests_durations
+        resource_availabilities
+        ;
 
-line : comment | property | resource | projectInformation | precedenceRelations | requestsDurations | resourceAvailableilities | header | row | others;
+file_header : comment property+ comment ;
 
-comment : ('*' '*'+) | ('-' '-'*) ;
+header_info : property+ 'RESOURCES' NEWLINE renewable nonrenewable doublyconstrained comment ;
 
-property : key WS* ':' WS* value;
+renewable : WS+ '- renewable' WS+ ':' WS+ renewable_number WS+ 'R' WS* NEWLINE ;
+nonrenewable : WS+ '- nonrenewable' WS+ ':' WS+ nonrenewable_number WS+ 'N' WS* NEWLINE ;
+doublyconstrained : WS+ '- doubly constrained' WS+ ':' WS+ doublyconstrained_number WS+ 'D' WS* NEWLINE ;
+
+renewable_number : NUMBER ;
+nonrenewable_number : NUMBER ;
+doublyconstrained_number : NUMBER ;
+
+project_information : 'PROJECT INFORMATION:' NEWLINE 'pronr.  #jobs rel.date duedate tardcost  MPM-Time' NEWLINE general_information+ comment ;
+
+general_information : WS+ proNumber WS+ jobId WS+ realDate WS+ dueDate WS+ tardCost WS+ mpmTime NEWLINE ;
+
+precedence_relations : 'PRECEDENCE RELATIONS:' NEWLINE 'jobnr.    #modes  #successors   successors' NEWLINE relationships+ comment ;
+
+relationships : WS+ jobId WS+ modes WS+ successorNumber WS* (WS+ successor)* NEWLINE ;
+
+requests_durations : 'REQUESTS/DURATIONS:' NEWLINE 'jobnr. mode duration' (WS+ 'R' WS+ resourceNumber)* NEWLINE comment resources+ comment ;
+
+resources : WS* jobId WS+ modes WS+ duration (WS+ resource)+ NEWLINE ;
+
+resource_availabilities : 'RESOURCEAVAILABILITIES:' NEWLINE (WS+ 'R' WS+ resourceNumber)* NEWLINE availablities+ comment ;
+
+availablities : (WS+ availability)+ NEWLINE ;
+
+availability : NUMBER ;
+
+proNumber : NUMBER ;
+jobId : NUMBER ;
+realDate : NUMBER ;
+dueDate : NUMBER ;
+tardCost : NUMBER ;
+mpmTime : NUMBER ;
+
+modes : NUMBER ;
+successorNumber : NUMBER ;
+successor : NUMBER ;
+
+resourceNumber : NUMBER ;
+duration : NUMBER ;
+
+resource : NUMBER ;
+
+property : key WS* ':' WS* value WS* NEWLINE ;
+
+comment : (('*' '*'+) | ('-' '-'+)) NEWLINE ;
 
 key : (WS* '-' WS*)* TEXT (WS TEXT)* ;
-
-value : (TEXT | NUMBER) (WS (TEXT | NUMBER))* ;
-
-others : TEXT (WS TEXT)*;
-
-resource : 'RESOURCES' ;
-
-projectInformation: 'PROJECT INFORMATION:' ;
-
-precedenceRelations: 'PRECEDENCE RELATIONS:' ;
-
-requestsDurations: 'REQUESTS/DURATIONS:' ;
-
-resourceAvailableilities: 'RESOURCEAVAILABILITIES:' ;
-
-header : WS* TEXT (WS (TEXT | NUMBER))* ;
-
-row : WS* NUMBER (WS NUMBER)* WS*;
+value : (TEXT | NUMBER) (WS+ (TEXT | NUMBER))* ;
 
 TEXT   : [a-zA-Z#()][a-zA-Z0-9.(/)_#\-]* ;
 LETTER : [a-zA-Z]+ ;
