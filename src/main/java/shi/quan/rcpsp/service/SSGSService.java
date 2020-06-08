@@ -12,12 +12,12 @@ import shi.quan.rcpsp.vo.Resource;
 import shi.quan.rcpsp.vo.ResourceInstance;
 import shi.quan.rcpsp.vo.Task;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@RequestScoped
+@ApplicationScoped
 public class SSGSService {
     private static final Logger logger = LoggerFactory.getLogger(SSGSService.class);
 
@@ -433,7 +433,9 @@ public class SSGSService {
                 Map<Duo<TimeType, TimeType>, AmountType> resourceMapByInstance = new HashMap<>();
 
                 for(Task<TimeType, PayloadType, AmountType> v : visited) {
-                    if(v.getResourceMap().containsKey(resourceId) && v.getChosenResources().get(resourceId).getId().equals(instance.getId())) {
+                    if(v.getResourceMap().containsKey(resourceId)
+                            && v.getChosenResources().containsKey(resourceId)
+                            && v.getChosenResources().get(resourceId).getId().equals(instance.getId())) {
 //                        if(verbose) logger.info("instance : {}, v : {}", instance, v);
                         Duo<TimeType, TimeType> d = (v != task) ? Duo.duo(v.getPlannedStartTime(), v.getPlannedEndTime()) : selectedTime;
 //                        if(verbose) logger.info("instance : {}, duo : {}", instance, duo);

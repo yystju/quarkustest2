@@ -148,7 +148,7 @@ public class SSGSServiceTest {
         int RESOURCE_SIZE = 40;
         int RESOURCE_INSTANCE_SIZE = Math.max(HORIZONTAL, VERTICAL);
         int RESOURCE_INSTANCE_CAP = 1;
-        int uBound = 1000;
+        int uBound = -1;
         int PAYLOAD = 10;
 
         Map<String, Object> context = new HashMap<>();

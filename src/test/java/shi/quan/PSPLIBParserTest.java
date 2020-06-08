@@ -35,14 +35,13 @@ public class PSPLIBParserTest {
 
     @Test
     public void test() throws IOException, BuzzException {
-        long uBound = 10000;
+        long uBound = -1;
 
         URL url = PSPLIBParserTest.class.getResource("/");
 
         logger.info("url : {}", url);
 
-        InputStream ins = PSPLIBParserTest.class.getResourceAsStream("/j120.sm/j1201_3.sm");
-//        InputStream ins = PSPLIBParserTest.class.getResourceAsStream("/example_x.sm");
+        InputStream ins = PSPLIBParserTest.class.getResourceAsStream("/example_x.sm");
 //        InputStream ins = PSPLIBParserTest.class.getResourceAsStream("/example_4.sm");
 //        InputStream ins = PSPLIBParserTest.class.getResourceAsStream("/example_10.sm");
 
