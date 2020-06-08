@@ -40,38 +40,46 @@ public class RangeUtil {
            , ResourceAmountProvider<TimeType, AmountType> resourceAmountProvider) {
 
       if(verbose) logger.info("[resourceCalculationByTimeRange]");
-      if(verbose) logger.info("\tranges : {}", ranges);
-      if(verbose) logger.info("\tresourceMap : {}", resourceMap);
-      if(verbose) logger.info("\tselected : {}", selected);
+//      if(verbose) logger.info("\tranges : {}", ranges);
+//      if(verbose) logger.info("\tresourceMap : {}", resourceMap);
+//      if(verbose) logger.info("\tselected : {}", selected);
 
       boolean ret = true;
 
       List<TimeType> splitters = getRangeSplitter(verbose, ranges, selected).stream().sorted().collect(Collectors.toList());
+
+      if(verbose) logger.info("splitters : {}", splitters);
 
       for(int i = 1; i < splitters.size(); ++i) {
          Duo<TimeType, TimeType> r = Duo.duo(splitters.get(i - 1), splitters.get(i));
 
          AmountType amount = amountCalculator.zero();
 
+         Map<Duo<TimeType,TimeType>, AmountType> selectedMap = new HashMap<>();
+
          for (Duo<TimeType, TimeType> range : ranges) {
             if (!isEmptyRange(intersect(r, range))) {
                AmountType resourceOfRange = resourceMap.get(range);
                amount = amountCalculator.plus(amount, resourceOfRange);
+               selectedMap.put(range, resourceOfRange);
             }
          }
 
          AmountType resourceThreshold = resourceAmountProvider.getResourceByTimeRange(r.getK(), r.getV());
 
          if(verbose) logger.info("r : {}, amount : {}, resource : {}", r, amount, resourceThreshold);
+         if(verbose) logger.info("selectedMap : {}", selectedMap);
 
          ret = resourceThreshold.compareTo(amount) >= 0;
 
-         if(verbose) logger.info("ret : {}", ret);
+//         if(verbose) logger.info("ret : {}", ret);
 
          if (!ret) {
             break;
          }
       }
+
+      if(verbose) logger.info("ret : {}", ret);
 
       return ret;
    }
@@ -79,7 +87,7 @@ public class RangeUtil {
    public static
    <TimeType extends Comparable<TimeType>>
    Set<TimeType> getRangeSplitter(boolean verbose, List<Duo<TimeType, TimeType>> ranges, Duo<TimeType, TimeType> selected) {
-      if(verbose) logger.info("[getRangeSplitter] ranges : {}, selected : {}", ranges, selected);
+//      if(verbose) logger.info("[getRangeSplitter] ranges : {}, selected : {}", ranges, selected);
       Set<TimeType> splitters = new HashSet<>();
 
       splitters.add(selected.getK());
@@ -100,9 +108,9 @@ public class RangeUtil {
          }
       }
 
-      if(verbose) logger.info("selected : {}", selected);
-      if(verbose) logger.info("Involved : {}", involved);
-      if(verbose) logger.info("splitters : {}", splitters);
+//      if(verbose) logger.info("selected : {}", selected);
+//      if(verbose) logger.info("Involved : {}", involved);
+//      if(verbose) logger.info("splitters : {}", splitters);
 
       return splitters;
    }

@@ -28,11 +28,11 @@ precedence_relations : 'PRECEDENCE RELATIONS:' NEWLINE 'jobnr.    #modes  #succe
 
 relationships : WS+ jobId WS+ modes WS+ successorNumber WS* (WS+ successor)* NEWLINE ;
 
-requests_durations : 'REQUESTS/DURATIONS:' NEWLINE 'jobnr. mode duration' (WS+ 'R' WS+ resourceNumber)* NEWLINE comment resources+ comment ;
+requests_durations : 'REQUESTS/DURATIONS:' NEWLINE 'jobnr. mode duration' (WS+ RESOURCE_FLAG WS+ resourceNumber)* NEWLINE comment resources+ comment ;
 
 resources : WS* jobId WS+ modes WS+ duration (WS+ resource)+ NEWLINE ;
 
-resource_availabilities : 'RESOURCEAVAILABILITIES:' NEWLINE (WS+ 'R' WS+ resourceNumber)* NEWLINE availablities+ comment ;
+resource_availabilities : 'RESOURCEAVAILABILITIES:' NEWLINE (WS+ RESOURCE_FLAG WS+ resourceNumber)* NEWLINE availablities+ comment ;
 
 availablities : (WS+ availability)+ NEWLINE ;
 
@@ -61,6 +61,7 @@ comment : (('*' '*'+) | ('-' '-'+)) NEWLINE ;
 key : (WS* '-' WS*)* TEXT (WS TEXT)* ;
 value : (TEXT | NUMBER) (WS+ (TEXT | NUMBER))* ;
 
+RESOURCE_FLAG : 'R' ; //TODO: This should be 'R', 'U', 'D'...
 TEXT   : [a-zA-Z#()][a-zA-Z0-9.(/)_#\-]* ;
 LETTER : [a-zA-Z]+ ;
 NUMBER : [0-9]+;

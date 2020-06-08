@@ -28,6 +28,7 @@ public class Resource<TimeType extends Comparable<TimeType>, AmountType extends 
         return "Resource{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
+                ", instances=" + this.instanceList +
                 '}';
     }
 
