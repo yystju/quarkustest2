@@ -121,6 +121,11 @@ public class PSPLIBParserTest {
 
         GraphUtil.TimeExtractor<Task<Integer, Integer, Integer>> timeExtractor = task -> task.getPayload();
 
-        ssgsService.ssgs(context, duo.getK(), duo.getV(), amountCalculator, timeCalculator, timeExtractor, uBound);
+        ssgsService.ssgs(context, duo.getK(), duo.getV(), amountCalculator, timeCalculator, timeExtractor, new SSGSService.EventListener<Integer, Integer, Integer>() {
+            @Override
+            public void onTaskProcessed(Map<String, Object> context, Task<Integer, Integer, Integer> task, int processed, int total) {
+                System.out.println(String.format("[%05d/%05d] %s (%d:%d - %d)", processed, total, task.getId(), task.getPlannedStartTime(), task.getPlannedEndTime(), task.getPayload()));
+            }
+        }, uBound);
     }
 }

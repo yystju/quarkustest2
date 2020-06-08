@@ -35,6 +35,10 @@ public class SSGSService {
     private static final String LAST_RANGES = "LAST_RANGES";
     private static final String LAST_SELECTED_TIME = "LAST_SELECTED_TIME";
 
+    public interface EventListener<TimeType extends Comparable<TimeType>, PayloadType, AmountType extends Comparable<AmountType>> {
+        void onTaskProcessed(Map<String, Object> context, Task<TimeType, PayloadType, AmountType> task, int processed, int total);
+    }
+
     /**
      * The main entry for SSGS.
      */
@@ -47,6 +51,7 @@ public class SSGSService {
             , RangeUtil.AmountCalculator<AmountType> amountCalculator
             , GraphUtil.TimeCalculator<TimeType, Task<TimeType, PayloadType, AmountType>, EdgeType> timeCalculator
             , GraphUtil.TimeExtractor<Task<TimeType, PayloadType, AmountType>> timeExtractor
+            , EventListener eventListener
             , long uBound) throws BuzzException {
         String verboseString = context.containsKey(VERBOSE) ? (String)context.get(VERBOSE) : "false";
         boolean verbose = Boolean.parseBoolean(verboseString);
@@ -71,6 +76,12 @@ public class SSGSService {
         if (uBound < 0L) {
             uBound = 5000L;
         }
+
+        String MAX_LOOP_STRING = context.containsKey(OFFSET_MAX) ? (String) context.get(OFFSET_MAX) : "1000";
+        String OFFSET_STEP_STRING = context.containsKey(OFFSET_STEP) ? (String) context.get(OFFSET_STEP) : "1";
+
+        long MAX_LOOP = Long.parseLong(MAX_LOOP_STRING);
+        long offsetStep = Long.parseLong(OFFSET_STEP_STRING);
 
         long loopCount = 0;
 
@@ -130,12 +141,6 @@ public class SSGSService {
                 if(verbose) logger.info(">> CHOOSE THE TASK : {}, # of PROCEEDED : {}", task, proceededTasks.size());
 
                 if (resourceConstraintCheck(context, resources, task)) {
-                    String MAX_LOOP_STRING = context.containsKey(OFFSET_MAX) ? (String) context.get(OFFSET_MAX) : "1000";
-                    String OFFSET_STEP_STRING = context.containsKey(OFFSET_STEP) ? (String) context.get(OFFSET_STEP) : "1";
-
-                    long MAX_LOOP = Long.parseLong(MAX_LOOP_STRING);
-                    long offsetStep = Long.parseLong(OFFSET_STEP_STRING);
-
                     boolean isDone = false;
                     long counter = 0;
 
@@ -167,6 +172,14 @@ public class SSGSService {
                                 visited.add(task);
                                 proceededTasks.add(task);
                                 isDone = true;
+
+                                if(eventListener != null) {
+                                    try {
+                                        eventListener.onTaskProcessed(context, task, proceededTasks.size(), graph.vertexSet().size());
+                                    } catch (Exception ex) {
+                                        logger.error("Error on calling EventListener.", ex);
+                                    }
+                                }
                             }
                         }
 
@@ -349,45 +362,83 @@ public class SSGSService {
 
             Resource<TimeType, AmountType> resource = resources.get(resourceId);
 
-////            if(verbose) logger.info("resource : {}", resource);
-//
-//            List<Duo<TimeType, TimeType>> ranges = new ArrayList<>();
-//            Map<Duo<TimeType, TimeType>, AmountType> resourceMap = new HashMap<>();
-//
-//            for(Task<TimeType, PayloadType, AmountType> v : visited) {
-//                if(v.getResourceMap().containsKey(resourceId)) {
-////                    if(verbose) logger.info("v : {}", v);
-//                    Duo<TimeType, TimeType> duo = (v != task) ? Duo.duo(v.getPlannedStartTime(), v.getPlannedEndTime()) : selectedTime;
-////                    if(verbose) logger.info("duo : {}", duo);
-//                    ranges.add(duo);
-//                    resourceMap.put(duo, task.getResourceMap().get(resourceId));
-//                }
-//            }
-//
-//            if(!visited.contains(task)) {
-//                ranges.add(selectedTime);
-//                resourceMap.put(selectedTime, task.getResourceMap().get(resourceId));
-//            }
-//
-//            if(verbose) logger.info("ranges : {}", ranges);
-//            if(verbose) logger.info("resourceMap : {}", resourceMap);
-//
-//            context.put(LAST_RANGES, ranges);
-//            context.put(LAST_SELECTED_TIME, selectedTime);
-
             for(ResourceInstance<TimeType, AmountType> instance : resource.getInstanceList()) {
                 if(verbose) logger.info("\tinstance : {}", instance.getId());
+
+//                Trio<List<Duo<TimeType, TimeType>>, Map<Duo<TimeType, TimeType>, AmountType>, Set<Task<TimeType, PayloadType, AmountType>>> trio = null;
+//
+//                String cacheKey = ".resourceSaturationCalculation.rangeResourceCache";
+//
+//                if(!context.containsKey(cacheKey)) {
+//                    context.put(cacheKey, new HashMap<String, Trio<List<Duo<TimeType, TimeType>>, Map<Duo<TimeType, TimeType>, AmountType>, Set<Task<TimeType, PayloadType, AmountType>>>>());
+//                }
+//
+//                Map<String, Trio<List<Duo<TimeType, TimeType>>, Map<Duo<TimeType, TimeType>, AmountType>, Set<Task<TimeType, PayloadType, AmountType>>>> cache =
+//                        (Map<String, Trio<List<Duo<TimeType, TimeType>>, Map<Duo<TimeType, TimeType>, AmountType>, Set<Task<TimeType, PayloadType, AmountType>>>>)context.get(cacheKey);
+//
+//                if(cache.containsKey(task.getId())) {
+//                    trio = cache.get(task.getId());
+//
+//                    // Sync from the last...
+//                    if(trio != null) {
+//                        Set<Task<TimeType, PayloadType, AmountType>> newVisisted = new HashSet<>(visited);
+//
+//                        newVisisted.removeAll(trio.getThree());
+//
+//                        for(Task<TimeType, PayloadType, AmountType> v : newVisisted) {
+//                            if(v.getResourceMap().containsKey(resourceId) && v.getChosenResources().values().contains(instance)) {
+////                        if(verbose) logger.info("instance : {}, v : {}", instance, v);
+//                                Duo<TimeType, TimeType> d = (v != task) ? Duo.duo(v.getPlannedStartTime(), v.getPlannedEndTime()) : selectedTime;
+////                        if(verbose) logger.info("instance : {}, duo : {}", instance, duo);
+//                                trio.getOne().add(d);
+//                                trio.getTwo().put(d, task.getResourceMap().get(resourceId));
+//                            }
+//                        }
+//
+//                        if(!trio.getOne().contains(selectedTime)) {
+//                            trio.getOne().add(selectedTime);
+//                            trio.getTwo().put(selectedTime, task.getResourceMap().get(resourceId));
+//                        }
+//
+//                        trio.setThree(new HashSet<>(visited));
+//
+//                        cache.put(task.getId(), trio);
+//                    }
+//                } else {
+//                    List<Duo<TimeType, TimeType>> rangesByInstance = new ArrayList<>();
+//                    Map<Duo<TimeType, TimeType>, AmountType> resourceMapByInstance = new HashMap<>();
+//                    Set<Task<TimeType, PayloadType, AmountType>> currentVisisted = new HashSet<>(visited);
+//
+//                    for(Task<TimeType, PayloadType, AmountType> v : visited) {
+//                        if(v.getResourceMap().containsKey(resourceId) && v.getChosenResources().values().contains(instance)) {
+////                        if(verbose) logger.info("instance : {}, v : {}", instance, v);
+//                            Duo<TimeType, TimeType> d = (v != task) ? Duo.duo(v.getPlannedStartTime(), v.getPlannedEndTime()) : selectedTime;
+////                        if(verbose) logger.info("instance : {}, duo : {}", instance, duo);
+//                            rangesByInstance.add(d);
+//                            resourceMapByInstance.put(d, task.getResourceMap().get(resourceId));
+//                        }
+//                    }
+//
+//                    if(!visited.contains(task)) {
+//                        rangesByInstance.add(selectedTime);
+//                        resourceMapByInstance.put(selectedTime, task.getResourceMap().get(resourceId));
+//                    }
+//
+//                    trio = Trio.trio(rangesByInstance, resourceMapByInstance, currentVisisted);
+//
+//                    cache.put(task.getId(), trio);
+//                }
 
                 List<Duo<TimeType, TimeType>> rangesByInstance = new ArrayList<>();
                 Map<Duo<TimeType, TimeType>, AmountType> resourceMapByInstance = new HashMap<>();
 
                 for(Task<TimeType, PayloadType, AmountType> v : visited) {
-                    if(v.getResourceMap().containsKey(resourceId) && v.getChosenResources().values().contains(instance)) {
+                    if(v.getResourceMap().containsKey(resourceId) && v.getChosenResources().get(resourceId).getId().equals(instance.getId())) {
 //                        if(verbose) logger.info("instance : {}, v : {}", instance, v);
-                        Duo<TimeType, TimeType> duo = (v != task) ? Duo.duo(v.getPlannedStartTime(), v.getPlannedEndTime()) : selectedTime;
+                        Duo<TimeType, TimeType> d = (v != task) ? Duo.duo(v.getPlannedStartTime(), v.getPlannedEndTime()) : selectedTime;
 //                        if(verbose) logger.info("instance : {}, duo : {}", instance, duo);
-                        rangesByInstance.add(duo);
-                        resourceMapByInstance.put(duo, task.getResourceMap().get(resourceId));
+                        rangesByInstance.add(d);
+                        resourceMapByInstance.put(d, task.getResourceMap().get(resourceId));
                     }
                 }
 
@@ -396,24 +447,22 @@ public class SSGSService {
                     resourceMapByInstance.put(selectedTime, task.getResourceMap().get(resourceId));
                 }
 
-                if(verbose) logger.info("\trangesByInstance : {}", rangesByInstance);
-                if(verbose) logger.info("\tresourceMapByInstance : {}", resourceMapByInstance);
+//                if(verbose) logger.info("\trangesByInstance : {}", duo.getK());
+//                if(verbose) logger.info("\tresourceMapByInstance : {}", duo.getV());
 
+//                if(RangeUtil.resourceCalculationByTimeRange(verbose, trio.getOne(), trio.getTwo(), selectedTime, amountCalculator, instance.getProvider())) {
                 if(RangeUtil.resourceCalculationByTimeRange(verbose, rangesByInstance, resourceMapByInstance, selectedTime, amountCalculator, instance.getProvider())) {
                     if(!availableResourceInstanceMap.containsKey(resourceId)) {
                         availableResourceInstanceMap.put(resourceId, new ArrayList<>());
                     }
 
                     availableResourceInstanceMap.get(resourceId).add(instance);
-                } else { // If one of the resources was not met, the whole is not met...
-                    availableResourceInstanceMap.clear();
-                    break;
                 }
             }
 
             if(verbose) logger.info("availableResourceInstanceMap : {}", availableResourceInstanceMap);
 
-            isAcceptable = !availableResourceInstanceMap.isEmpty();
+            isAcceptable = !(availableResourceInstanceMap.isEmpty() || availableResourceInstanceMap.values().stream().anyMatch(l->l.size() == 0));
 
             if(!isAcceptable) {
                 break;
@@ -440,14 +489,29 @@ public class SSGSService {
         GraphUtil.TimeExtractor<Task<TimeType, PayloadType, AmountType>> timeExtractor = (GraphUtil.TimeExtractor<Task<TimeType, PayloadType, AmountType>>)context.get(TIME_EXTRACTOR);
         //RangeUtil.AmountCalculator<AmountType> amountCalculator = (RangeUtil.AmountCalculator<AmountType>)context.get(AMOUNT_CALCULATOR);
 
-        TimeType latestEndTime = graph.incomingEdgesOf(task).stream().map(e-> {
-            Task<TimeType, PayloadType, AmountType> predecessor = graph.getEdgeSource(e);
-            return predecessor.getPlannedEndTime();
-        }).sorted(Comparator.reverseOrder()).findFirst().orElse(timeCalculator.zero());
+        String cacheKey = ".calcTimeRange.incomingSourceCache";
+
+        if(!context.containsKey(cacheKey)) {
+            context.put(cacheKey, new HashMap<String, Set<Task<TimeType, PayloadType, AmountType>>>());
+        }
+        Map<String, Set<Task<TimeType, PayloadType, AmountType>>> edgeCache = (Map<String, Set<Task<TimeType, PayloadType, AmountType>>>)context.get(cacheKey);
+
+        Set<Task<TimeType, PayloadType, AmountType>> sources = null;
+
+        if(edgeCache.containsKey(task.getId())) {
+            sources = edgeCache.get(task.getId());
+        } else {
+            sources = graph.incomingEdgesOf(task).stream().map(e -> graph.getEdgeSource(e)).collect(Collectors.toSet());
+            edgeCache.put(task.getId(), sources);
+        }
+
+        TimeType latestEndTime = sources.stream().map(t-> t.getPlannedEndTime()).max(Comparable::compareTo).orElse(timeCalculator.zero());
 
 //        if(verbose) logger.info("latestEndTime : {}", latestEndTime);
 
         TimeType offsetTime = timeCalculator.fromLong(graph, task, offset);
+
+//        if(verbose) logger.info("offsetTime : {}", offsetTime);
 
         return Duo.duo(timeCalculator.plus(latestEndTime, offsetTime), timeCalculator.plus(timeCalculator.plus(latestEndTime, timeCalculator.fromLong(graph, task, timeExtractor.duration(task))), offsetTime));
     }

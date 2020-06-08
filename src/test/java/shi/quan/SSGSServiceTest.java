@@ -133,15 +133,20 @@ public class SSGSServiceTest {
 
         GraphUtil.TimeExtractor<Task<Long, Integer, Integer>> timeExtractor = task -> task.getPayload();
 
-        ssgsService.ssgs(context, graph, resources, amountCalculator, timeCalculator, timeExtractor, 100);
+        ssgsService.ssgs(context, graph, resources, amountCalculator, timeCalculator, timeExtractor, new SSGSService.EventListener<Long, Integer, Integer>() {
+            @Override
+            public void onTaskProcessed(Map<String, Object> context, Task<Long, Integer, Integer> task, int processed, int total) {
+                System.out.println(String.format("[%05d/%05d] %s (%d:%d - %d)", processed, total, task.getId(), task.getPlannedStartTime(), task.getPlannedEndTime(), task.getPayload()));
+            }
+        }, 100);
     }
 
     @Test
     public void test2() throws BuzzException {
         int HORIZONTAL = 50;
         int VERTICAL = 50;
-        int RESOURCE_SIZE = 1;
-        int RESOURCE_INSTANCE_SIZE = 50;
+        int RESOURCE_SIZE = 40;
+        int RESOURCE_INSTANCE_SIZE = Math.max(HORIZONTAL, VERTICAL);
         int RESOURCE_INSTANCE_CAP = 1;
         int uBound = 1000;
         int PAYLOAD = 10;
@@ -159,8 +164,8 @@ public class SSGSServiceTest {
 
         int total = HORIZONTAL * VERTICAL * PAYLOAD;
         double avg = PAYLOAD;
-        int step = PAYLOAD;
-        int loopMax = HORIZONTAL * VERTICAL;
+        int step = 1;
+        int loopMax = 100; // HORIZONTAL * VERTICAL;
 
         logger.info("total : {}", total);
         logger.info("avg : {}", avg);
@@ -275,7 +280,12 @@ public class SSGSServiceTest {
 
         GraphUtil.TimeExtractor<Task<Long, Integer, Integer>> timeExtractor = task -> task.getPayload();
 
-        ssgsService.ssgs(context, graph, resources, amountCalculator, timeCalculator, timeExtractor, uBound);
+        ssgsService.ssgs(context, graph, resources, amountCalculator, timeCalculator, timeExtractor, new SSGSService.EventListener<Long, Integer, Integer>() {
+            @Override
+            public void onTaskProcessed(Map<String, Object> context, Task<Long, Integer, Integer> task, int processed, int total) {
+                System.out.println(String.format("[%05d/%05d] %s (%d:%d - %d)", processed, total, task.getId(), task.getPlannedStartTime(), task.getPlannedEndTime(), task.getPayload()));
+            }
+        }, uBound);
     }
 
 }
