@@ -147,9 +147,10 @@ public class SSGSServiceTest {
                 .edgeClass(DefaultEdge.class)
                 .weighted(true)
                 .buildGraph();
-//
+
 //        context.put(SSGSService.VERBOSE, "true");
-//
+        context.put(SSGSService.OFFSET_MAX, "100");
+        context.put(SSGSService.OFFSET_STEP, "1");
 
         int HORIZONTAL = 60;
         int VERTICAL = 60;
