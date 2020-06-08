@@ -74,7 +74,7 @@ public class SSGSService {
         Set<Task<TimeType, PayloadType, AmountType>> visited;
 
         if (uBound < 0L) {
-            uBound = 5000L;
+            uBound = 100L;
         }
 
         String MAX_LOOP_STRING = context.containsKey(OFFSET_MAX) ? (String) context.get(OFFSET_MAX) : "1000";
