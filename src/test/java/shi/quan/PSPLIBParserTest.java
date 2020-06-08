@@ -41,7 +41,7 @@ public class PSPLIBParserTest {
 
         logger.info("url : {}", url);
 
-        InputStream ins = PSPLIBParserTest.class.getResourceAsStream("/j120.sm/j1201_1.sm");
+        InputStream ins = PSPLIBParserTest.class.getResourceAsStream("/j120.sm/j1201_3.sm");
 //        InputStream ins = PSPLIBParserTest.class.getResourceAsStream("/example_x.sm");
 //        InputStream ins = PSPLIBParserTest.class.getResourceAsStream("/example_4.sm");
 //        InputStream ins = PSPLIBParserTest.class.getResourceAsStream("/example_10.sm");
@@ -59,11 +59,21 @@ public class PSPLIBParserTest {
         logger.info("graph.e : {}", duo.getK().edgeSet().stream().map(e -> String.format("%s->%s", duo.getK().getEdgeSource(e).getId(), duo.getK().getEdgeTarget(e).getId())).collect(Collectors.toList()));
         logger.info("resource : {}", duo.getV());
 
+        int total = duo.getK().vertexSet().stream().mapToInt(t->t.getPayload()).sum();
+        double avg = total / duo.getK().vertexSet().size();
+        int step = (int) (avg / 2.0d);
+        int loopMax = (int)((double)total / (double)step);
+
+        logger.info("total : {}", total);
+        logger.info("avg : {}", avg);
+        logger.info("step : {}", step);
+        logger.info("loopMax : {}", loopMax);
+
         Map<String, Object> context = new HashMap<>();
 
 //        context.put(SSGSService.VERBOSE, "true");
-        context.put(SSGSService.OFFSET_MAX, "200");
-        context.put(SSGSService.OFFSET_STEP, "1");
+        context.put(SSGSService.OFFSET_MAX, String.format("%d", loopMax));
+        context.put(SSGSService.OFFSET_STEP, String.format("%d", step));
 
         RangeUtil.AmountCalculator<Integer> amountCalculator = new RangeUtil.AmountCalculator<>() {
             @Override

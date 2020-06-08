@@ -138,6 +138,14 @@ public class SSGSServiceTest {
 
     @Test
     public void test2() throws BuzzException {
+        int HORIZONTAL = 50;
+        int VERTICAL = 50;
+        int RESOURCE_SIZE = 1;
+        int RESOURCE_INSTANCE_SIZE = 50;
+        int RESOURCE_INSTANCE_CAP = 1;
+        int uBound = 1000;
+        int PAYLOAD = 10;
+
         Map<String, Object> context = new HashMap<>();
 
         Graph<Task<Long, Integer, Integer>, DefaultEdge> graph = GraphTypeBuilder
@@ -148,16 +156,20 @@ public class SSGSServiceTest {
                 .weighted(true)
                 .buildGraph();
 
-//        context.put(SSGSService.VERBOSE, "true");
-        context.put(SSGSService.OFFSET_MAX, "100");
-        context.put(SSGSService.OFFSET_STEP, "1");
 
-        int HORIZONTAL = 60;
-        int VERTICAL = 60;
-        int RESOURCE_SIZE = 1;
-        int RESOURCE_INSTANCE_SIZE = 50;
-        int RESOURCE_INSTANCE_CAP = 1;
-        int uBound = 1000;
+        int total = HORIZONTAL * VERTICAL * PAYLOAD;
+        double avg = PAYLOAD;
+        int step = PAYLOAD;
+        int loopMax = HORIZONTAL * VERTICAL;
+
+        logger.info("total : {}", total);
+        logger.info("avg : {}", avg);
+        logger.info("step : {}", step);
+        logger.info("loopMax : {}", loopMax);
+
+//        context.put(SSGSService.VERBOSE, "true");
+        context.put(SSGSService.OFFSET_MAX, String.format("%d", loopMax));
+        context.put(SSGSService.OFFSET_STEP, String.format("%d", step));
 
         ArrayList<ArrayList<Task<Long, Integer, Integer>>> tasksArray = new ArrayList<>();
 
@@ -165,8 +177,7 @@ public class SSGSServiceTest {
             ArrayList<Task<Long, Integer, Integer>> tasks = new ArrayList<>();
             for(int j = 1; j <= VERTICAL; ++j) {
                 String id = String.format("%05d::%05d", i, j);
-                int payload = 10; // ((int)(Math.random() * 5.0) * 10 + 10);
-                Task<Long, Integer, Integer> task = new Task<>(id, String.format("TASK %s", id), payload);
+                Task<Long, Integer, Integer> task = new Task<>(id, String.format("TASK %s", id), PAYLOAD);
 
                 for(int k = 1; k <= RESOURCE_SIZE; ++k) {
                     task.getResourceMap().put(String.format("%05d", k), 1);
